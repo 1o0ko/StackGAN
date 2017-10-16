@@ -12,8 +12,6 @@
 extra:
 	@echo "Extra target!"
 
-
-# Example target: Run `py.test` in the current directory
-.PHONY: test
-test: $(TARGET_DONE_FILE_BUILD)
-	$(DOCKER_COMMAND_RUN) py.test .
+.PHONY: gputest
+gputest: $(TARGET_DONE_FILE_BUILD)
+	$(DOCKER_COMMAND_RUN) nvidia-smi 
