@@ -1,4 +1,7 @@
 *.pyc
 ckt_logs
 backup
-.DS_Store
+
+..*
+Makefile.cfg
+Makefile.userDS_Store
