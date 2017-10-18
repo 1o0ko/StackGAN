@@ -1,7 +1,7 @@
 # Visit https://hub.docker.com/r/tensorflow/tensorflow/tags/
 # to see available version.
 
-FROM gcr.io/tensorflow/tensorflow:0.12.0-gpu
+FROM gcr.io/tensorflow/tensorflow:1.0.1-gpu
 
 RUN apt-get update && apt-get install -y \
     git libhdf5-dev
