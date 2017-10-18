@@ -18,7 +18,7 @@ import scipy.misc
 LR_HR_RETIO = 4
 IMSIZE = 256
 LOAD_SIZE = int(IMSIZE * 76 / 64)
-FLOWER_DIR = 'Data/flowers'
+FLOWER_DIR = '/data/flowers'
 
 
 def load_filenames(data_dir):

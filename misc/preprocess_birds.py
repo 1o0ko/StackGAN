@@ -19,7 +19,7 @@ import pandas as pd
 LR_HR_RETIO = 4
 IMSIZE = 256
 LOAD_SIZE = int(IMSIZE * 76 / 64)
-BIRD_DIR = 'Data/birds'
+BIRD_DIR = '/data/birds'
 
 
 def load_filenames(data_dir):
