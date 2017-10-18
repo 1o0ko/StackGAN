@@ -1,4 +1,4 @@
-# ##############################################################################
+#############################################################################
 # You do no need to modify anything in this file.
 # ##############################################################################
 
@@ -164,7 +164,7 @@ $(eval TENSORBOARD_DIR := $(call add_if_not_present,TENSORBOARD_DIR,Enter Tensor
 $(eval DOCKER_BUILD_EXTRA := $(call add_if_not_present,DOCKER_BUILD_EXTRA,Enter 'docker build' extra arguments,$(DEFAULT_DOCKER_BUILD_EXTRA)))
 $(eval DOCKER_RUN_EXTRA := $(call add_if_not_present,DOCKER_RUN_EXTRA,Enter 'docker run' extra arguments,$(DEFAULT_DOCKER_RUN_EXTRA)))
 
-$(eval JUPYTER_PORT := $(call get_random_port,JUPYTER_PORT))
+#$(eval JUPYTER_PORT := $(call get_random_port,JUPYTER_PORT))
 $(eval TENSORBOARD_PORT := $(call get_random_port,TENSORBOARD_PORT))
 
 
@@ -192,12 +192,12 @@ CMD = /bin/bash
 HOSTNAME := $(shell hostname)
 
 # Command to execute to launch a Jupyter notebook
+JUPYTER_PORT=9999
 JUPYTER_COMMAND = jupyter notebook \
     --no-browser \
     --ip=0.0.0.0 \
-    --port=$(JUPYTER_PORT) \
-    --NotebookApp.iopub_data_rate_limit=10000000000
-
+    --port=$(JUPYTER_PORT) 
+#
 # Command to execute to launch tensorboard
 TENSORBOARD_COMMAND = tensorboard \
     --logdir=/eai/$(TENSORBOARD_DIR) \
@@ -363,6 +363,11 @@ tensorboard: print_makefile_version $(TARGET_DONE_FILE_BUILD) $(TENSORBOARD_DIR)
 .PHONY: tb
 tb: tensorboard
 
+
+# Phony target to run the docker container
+.PHONY: run
+run: print_makefile_version $(TARGET_DONE_FILE_BUILD)
+	$(DOCKER_COMMAND_RUN)
 
 # Phony target to run an interactive shell (as same user as the one
 # invoking `make`) inside the container.

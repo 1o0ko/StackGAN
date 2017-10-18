@@ -1,12 +1,14 @@
 Pillow
 PyYAML
 easydict
+fuel==0.2.0
+h5py==2.7.1
 ipdb
+ipython
+jupyter
 pandas
 prettytensor
 progressbar2
 python_dateutil
 six
 torchfile
-fuel==0.2.0
-h5py==2.7.1
