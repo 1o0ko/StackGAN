@@ -3,7 +3,7 @@ Custom script to preprocess fashion dataset
 '''
 import os
 
-FASHION_DIR = '/data/fashion/'
+FASHION_DIR = '/data/fashion'
 
 
 def load_filenames(data_dir):
