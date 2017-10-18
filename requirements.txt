@@ -17,7 +17,7 @@ numpy==1.13.3
 olefile==0.44
 pandas==0.20.3
 pbr==3.1.1
-prettytensor==0.7.4
+prettytensor==0.7.3
 progressbar==2.3
 protobuf==3.4.0
 python-dateutil==2.6.1

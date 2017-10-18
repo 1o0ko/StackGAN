@@ -72,8 +72,8 @@ class Dataset(object):
                 np.zeros([images.shape[0], self._imsize, self._imsize, 3])
             ori_size = images.shape[1]
             for i in range(images.shape[0]):
-                h1 = np.floor((ori_size - self._imsize) * np.random.random())
-                w1 = np.floor((ori_size - self._imsize) * np.random.random())
+                h1 = int(np.floor((ori_size - self._imsize) * np.random.random()))
+                w1 = int(np.floor((ori_size - self._imsize) * np.random.random()))
                 cropped_image =\
                     images[i][w1: w1 + self._imsize, h1: h1 + self._imsize, :]
                 if random.random() > 0.5:
