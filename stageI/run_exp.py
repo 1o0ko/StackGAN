@@ -42,7 +42,7 @@ if __name__ == "__main__":
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
 
-    datadir = '$s/%s' % (args.data_path, cfg.DATASET_NAME)
+    datadir = '%s/%s' % (args.data_path, cfg.DATASET_NAME)
     dataset = TextDataset(datadir, cfg.EMBEDDING_TYPE, 1)
     filename_test = '%s/test' % (datadir)
     dataset.test = dataset.get_data(filename_test)

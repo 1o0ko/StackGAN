@@ -21,7 +21,6 @@ prettytensor==0.7.4
 progressbar==2.3
 protobuf==3.4.0
 python-dateutil==2.6.1
-python_dateutil
 pytz==2017.2
 scipy==0.19.1
 six==1.11.0
