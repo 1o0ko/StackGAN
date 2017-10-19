@@ -114,7 +114,7 @@ class CondGANTrainer(object):
                 z = tf.random_normal([self.batch_size, cfg.Z_DIM])
                 self.log_vars.append(("hist_c", c))
                 self.log_vars.append(("hist_z", z))
-                fake_images = self.model.get_generator(tf.concat(1, [c, z]))
+                fake_images = self.model.get_generator(tf.concat([c, z], 1))
 
             # ####get discriminator_loss and generator_loss ###################
             discriminator_loss, generator_loss =\
@@ -158,7 +158,7 @@ class CondGANTrainer(object):
         with tf.variable_scope("g_net", reuse=True):
             c, _ = self.sample_encoded_context(self.embeddings)
             z = tf.random_normal([self.batch_size, cfg.Z_DIM])
-            self.fake_images = self.model.get_generator(tf.concat(1, [c, z]))
+            self.fake_images = self.model.get_generator(tf.concat([c, z], 1))
         with tf.variable_scope("hr_g_net", reuse=True):
             hr_c, _ = self.sample_encoded_context(self.embeddings)
             self.hr_fake_images =\
@@ -287,8 +287,8 @@ class CondGANTrainer(object):
             for col in range(rows):
                 row_img.append(img_var[row * rows + col, :, :, :])
             # each rows is 1realimage +10_fakeimage
-            stacked_img.append(tf.concat(1, row_img))
-        imgs = tf.expand_dims(tf.concat(0, stacked_img), 0)
+            stacked_img.append(tf.concat(row_img, 1))
+        imgs = tf.expand_dims(tf.concat(stacked_img, 0), 0)
         current_img_summary = tf.image_summary(filename, imgs)
         return current_img_summary, imgs
 
@@ -301,7 +301,7 @@ class CondGANTrainer(object):
             self.visualize_one_superimage(self.fake_images[n * n:2 * n * n],
                                           self.images[n * n:2 * n * n],
                                           n, "test")
-        self.superimages = tf.concat(0, [superimage_train, superimage_test])
+        self.superimages = tf.concat([superimage_train, superimage_test], 0)
         self.image_summary = tf.merge_summary([fake_sum_train, fake_sum_test])
 
         hr_fake_sum_train, hr_superimage_train =\
@@ -313,7 +313,7 @@ class CondGANTrainer(object):
                                           self.hr_images[n * n:2 * n * n],
                                           n, "hr_test")
         self.hr_superimages =\
-            tf.concat(0, [hr_superimage_train, hr_superimage_test])
+            tf.concat([hr_superimage_train, hr_superimage_test], 0)
         self.hr_image_summary =\
             tf.merge_summary([hr_fake_sum_train, hr_fake_sum_test])
 
