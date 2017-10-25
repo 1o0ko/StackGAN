@@ -55,6 +55,7 @@ def normalize(text, black_list=BLACK_LIST, vocab=None,
 
 
 def load_and_process(data_path, num_words, maxlen):
+    logger = logging.getLogger(__name__)
     with open(data_path, 'rt') as f:
         classes, texts = zip(*[line.split(" ", 1) for line in f.readlines()])
 
