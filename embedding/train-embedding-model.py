@@ -30,17 +30,18 @@ from keras.layers import Embedding
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.preprocessing.sequence import pad_sequences
-from keras.preprocessing.text import Tokenizer 
+from keras.preprocessing.text import Tokenizer
 from keras.regularizers import l2
 from keras.utils.np_utils import to_categorical
 from keras.utils.np_utils import to_categorical
 
 from typeopt import Arguments
 
-BLACK_LIST = string.punctuation.replace('%', '').replace('-','') + '\n'
+BLACK_LIST = string.punctuation.replace('%', '').replace('-', '') + '\n'
 
 
-def normalize(text, black_list = BLACK_LIST, vocab=None, lowercase =  True, tokenize = False):
+def normalize(text, black_list=BLACK_LIST, vocab=None,
+              lowercase=True, tokenize=False):
     if black_list:
         text = text.translate(None, BLACK_LIST)
     if lowercase:
@@ -54,7 +55,7 @@ def normalize(text, black_list = BLACK_LIST, vocab=None, lowercase =  True, toke
 
 def load_and_process(data_path, num_words, maxlen):
     with open(data_path, 'rt') as f:
-        classes, texts =  zip(*[line.split(" ", 1) for line in f.readlines()])
+        classes, texts = zip(*[line.split(" ", 1) for line in f.readlines()])
 
         # class preprocessing
         classes = [cls[9:] for cls in classes]
@@ -72,7 +73,11 @@ def load_and_process(data_path, num_words, maxlen):
     logger.debug('Found %s unique tokens', len(word_index))
 
     # Padding data
-    data = pad_sequences(sequences, maxlen=maxlen, padding='post', truncating='post')
+    data = pad_sequences(
+        sequences,
+        maxlen=maxlen,
+        padding='post',
+        truncating='post')
 
     logger.debug('Shape of data tensor: %s', data.shape)
     logger.debug('Shape of label tensor: %s', ids.shape)
@@ -80,7 +85,8 @@ def load_and_process(data_path, num_words, maxlen):
     return data, ids, word_index
 
 
-def load_glove_embeddings(embedding_path, word_index, max_sequence, trainable=True):
+def load_glove_embeddings(embedding_path, word_index,
+                          max_sequence, trainable=True):
     '''
     Loads Glove word vectors
     Arguments:
@@ -163,7 +169,12 @@ def build_model(word_index, glove_path, max_sent):
     model.add(Dropout(dropout_rate))
 
     # add l2 regularization
-    model.add(Dense(1024, name="embedding", activation='relu', kernel_regularizer=l2(.01)))
+    model.add(
+        Dense(
+            1024,
+            name="embedding",
+            activation='relu',
+            kernel_regularizer=l2(.01)))
     model.add(Dense(nb_classes, activation='softmax'))
 
     # Setup optimizer
@@ -172,11 +183,10 @@ def build_model(word_index, glove_path, max_sent):
     # Compile model
     logger.debug('Compiling the model')
     model.compile(loss='categorical_crossentropy',
-                                optimizer=adam,
-                                metrics=['acc'])
+                  optimizer=adam,
+                  metrics=['acc'])
 
     return model
-
 
 
 def main(args):
@@ -184,7 +194,8 @@ def main(args):
     logger.setLevel(logging.DEBUG)
 
     # load and process data
-    data, labels, word_index = load_and_process(args.glove, args.words, args.sent_length)
+    data, labels, word_index = load_and_process(
+        args.glove, args.words, args.sent_length)
 
     # make split
     x_train, y_train, x_val, y_val = train_val_split(data, labels, 0.1)
@@ -192,11 +203,11 @@ def main(args):
     # Build and train a model
     model = build_model(word_index)
     model.fit(
-            x_train, y_train,
-            validation_data=(x_val, y_val),
-            epochs=10,
-            batch_size=128,
-            verbose=1)
+        x_train, y_train,
+        validation_data=(x_val, y_val),
+        epochs=10,
+        batch_size=128,
+        verbose=1)
 
     # evalute model on train data to see how well we're fitting the data
     logger.info("Train data")
@@ -213,8 +224,7 @@ def main(args):
     with K.get_session() as ses:
         saver.save(sess, os.path.join(args.path, 'model'))
 
+
 if __name__ == '__main__':
     args = Arguments(__doc__, version='0.1')
     main(args)
-
-
