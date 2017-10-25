@@ -12,7 +12,9 @@ Options:
     -w, --words=<int>            Maximum number of words in dictionary
                                  [default: 7000]
     -s, --sent-length=<int>      Maximum number of words in the sentence
-                                 [default:400]
+                                 [default: 400]
+    -s, --dropout=<float>        Dropout rate
+                                 [default: 0.2]
 """
 import os
 import logging
@@ -36,7 +38,7 @@ from keras.regularizers import l2
 from keras.utils.np_utils import to_categorical
 from keras.utils.np_utils import to_categorical
 
-from typeopt import Arguments
+from docopt import docopt
 
 BLACK_LIST = string.punctuation.replace('%', '').replace('-', '') + '\n'
 
@@ -150,7 +152,7 @@ def train_val_split(data, labels, split_ratio, seed=0):
     return x_train, y_train, x_val, y_val
 
 
-def build_model(word_index, glove_path, max_sent):
+def build_model(word_index, glove_path, max_sent, dropout_rate, nb_classes):
     logger = logging.getLogger(__name__)
 
     logger.debug('Loading glove embeddings')
@@ -197,19 +199,21 @@ def main(args):
 
     # load and process data
     data, labels, word_index = load_and_process(
-        args.data_path, args.words, args.sent_length
+        args['DATA_PATH'], int(args['--words']), int(args['--sent-length'])
     )
+    nb_classes = labels.shape[1]
 
     # make split
     x_train, y_train, x_val, y_val = train_val_split(data, labels, 0.1)
 
     # Build and train a model
-    model = build_model(word_index, args.glove, args.sent_length)
+    model = build_model(
+        word_index, args['GLOVE'], int(args['--sent-length']), float(args['--dropout']), nb_classes)
     model.summary()
     model.fit(
         x_train, y_train,
         validation_data=(x_val, y_val),
-        epochs=10,
+        epochs=int(args['--epochs']),
         batch_size=128,
         verbose=1)
 
@@ -225,10 +229,10 @@ def main(args):
     K.set_learning_phase(0)
     saver = tf.train.Saver()
 
-    with K.get_session() as ses:
-        saver.save(sess, os.path.join(args.output_path, 'model'))
+    with K.get_session() as sess:
+        saver.save(sess, os.path.join(args['OUTPUT_PATH'], 'model'))
 
 
 if __name__ == '__main__':
-    args = Arguments(__doc__, version='0.1')
+    args = docopt(__doc__, version='0.1')
     main(args)
