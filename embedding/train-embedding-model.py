@@ -1,9 +1,10 @@
 """
-Usage: example.py DATA_PATH GLOVE [options]
+Usage: example.py DATA_PATH GLOVE OUTPUT_PATH [options]
 
 Arguments:
-    PATH    path to save the model file
-    GLOVE   file where glove vectors are saved
+    DATA_PATH      path with data
+    OUTPUT_PATH    path to save the model file
+    GLOVE          file where glove vectors are saved
 
 Options:
     -e, --epochs=<int>           Limit on the number of parsed lines
@@ -190,18 +191,20 @@ def build_model(word_index, glove_path, max_sent):
 
 
 def main(args):
-    logger = logging.logger(__name__)
+    logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
     # load and process data
     data, labels, word_index = load_and_process(
-        args.glove, args.words, args.sent_length)
+        args.data_path, args.words, args.sent_length
+    )
 
     # make split
     x_train, y_train, x_val, y_val = train_val_split(data, labels, 0.1)
 
     # Build and train a model
-    model = build_model(word_index)
+    model = build_model(word_index, args.glove, args.sent_length)
+    model.summary()
     model.fit(
         x_train, y_train,
         validation_data=(x_val, y_val),
@@ -222,7 +225,7 @@ def main(args):
     saver = tf.train.Saver()
 
     with K.get_session() as ses:
-        saver.save(sess, os.path.join(args.path, 'model'))
+        saver.save(sess, os.path.join(args.output_path, 'model'))
 
 
 if __name__ == '__main__':
