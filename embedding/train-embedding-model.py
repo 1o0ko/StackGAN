@@ -1,12 +1,17 @@
 """
-Usage: example.py PATH [options]
+Usage: example.py DATA_PATH GLOVE [options]
 
 Arguments:
     PATH    path to save the model file
+    GLOVE   file where glove vectors are saved
 
 Options:
     -e, --epochs=<int>           Limit on the number of parsed lines
                                  [default: 10]
+    -w, --words=<int>            Maximum number of words in dictionary
+                                 [default: 7000]
+    -s, --sent-length=<int>      Maximum number of words in the sentence
+                                 [default:400]
 """
 import os
 import logging
@@ -32,17 +37,8 @@ from keras.utils.np_utils import to_categorical
 
 from typeopt import Arguments
 
-#TODO: this sould be in a config
-DATA_PATH = '/data/fashion/txt/fashion.dedup.txt'
-GLOVE_6B_VOCAB_PATH = '/data/models/glove.6B.vocab'
-GLOVE_6B_PATH = '/data/models/glove.6B.300d.txt'
-GLOVE_840B_VOCAB_PATH = '/data/models/glove.840B.vocab'
-GLOVE_840B_PATH = '/data/models/glove.840B.300d.txt'
-
 BLACK_LIST = string.punctuation.replace('%', '').replace('-','') + '\n'
 
-MAX_WORDS = 7000
-MAX_SENT_LENGTH = 400
 
 def normalize(text, black_list = BLACK_LIST, vocab=None, lowercase =  True, tokenize = False):
     if black_list:
@@ -62,16 +58,16 @@ def load_and_process(data_path, num_words, maxlen):
 
         # class preprocessing
         classes = [cls[9:] for cls in classes]
-        class_to_id = { 
+        class_to_id = {
             key: index for (index, (key, value)) in enumerate(Counter(classes).most_common())
         }
         ids = to_categorical([class_to_id[cls] for cls in classes])
-    
+
     # Setting up keras tokenzer
     tokenizer = Tokenizer(num_words=num_words)
     tokenizer.fit_on_texts(texts)
     sequences = tokenizer.texts_to_sequences(texts)
-    
+
     word_index = tokenizer.word_index
     logger.debug('Found %s unique tokens', len(word_index))
 
@@ -146,7 +142,7 @@ def train_val_split(data, labels, split_ratio, seed=0):
     return x_train, y_train, x_val, y_val
 
 
-def build_model(word_index, glove_path=GLOVE_6B_PATH, max_sent=MAX_SENT_LENGHT):
+def build_model(word_index, glove_path, max_sent):
     logger = logging.getLogger(__name__)
 
     logger.debug('Loading glove embeddings')
@@ -188,7 +184,7 @@ def main(args):
     logger.setLevel(logging.DEBUG)
 
     # load and process data
-    data, labels, word_index = load_and_process(DATA_PATH, MAX_SENT_LENGTH, MAX_SENT_LENGTH)
+    data, labels, word_index = load_and_process(args.glove, args.words, args.sent_length)
 
     # make split
     x_train, y_train, x_val, y_val = train_val_split(data, labels, 0.1)
