@@ -24,21 +24,11 @@ import tensorflow as tf
 
 from model import Model
 from readers import readers
+from utils import load_filenames
+
 from docopt import docopt
 
 MODEL_NAME = 'custom_embeddings.pickle'
-
-
-def load_filenames(data_dir):
-    logger = logging.getLogger(__name__)
-    filepath = os.path.join(data_dir, 'filenames.pickle')
-
-    with open(filepath, 'rb') as f:
-        filenames = pickle.load(f)
-
-    logger.info('Load filenames from: %s (%d)' % (filepath, len(filenames)))
-
-    return filenames
 
 
 def embed_and_save(inpath, filenames, outpath, model, reader):
