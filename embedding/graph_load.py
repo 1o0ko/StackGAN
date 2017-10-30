@@ -11,6 +11,7 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 
 INPUT_TENSOR_NAME='embedding_1_input:0'
+OUTPUT_TENSOR_NAME='embedding/Relu:0'
 PREFIX ='prefix'
 MAX_SENT_LENGTH = 400
 

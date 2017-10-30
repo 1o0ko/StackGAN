@@ -1,8 +1,10 @@
 """
-Usage: train.py MODEL_DIR NODE_NAMES ...
+Usage: graph_freeze.py MODEL_DIR NODE_NAMES ...
+
 Arguments:
     MODEL_DIR   path to tensorflow checkpoint
     NODE_NAMES  list of nodes to export from graph
+
 Based on: https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc
 """
 import os
@@ -33,6 +35,11 @@ def freeze_graph(model_dir, node_names):
 
     checkpoint = tf.train.get_checkpoint_state(model_dir)
     input_checkpoint = checkpoint.model_checkpoint_path
+
+    # I don't know why, but even if training code is run in the docker container, the input
+    # path is always the host absolute path.
+    if not tf.gfile.Exists(input_checkpoint):
+        input_checkpoint = os.path.join(model_dir, 'model')
 
     # We precise the file fullname of our freezed graph
     output_graph = os.path.join(os.path.dirname(model_dir), "frozen_model.pb")
