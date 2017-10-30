@@ -1,4 +1,6 @@
 """
+This module contains function for freezing and loading cleaned graphs saved in keras with tf backend
+
 Usage: graph_freeze.py MODEL_DIR NODE_NAMES ...
 
 Arguments:
@@ -17,8 +19,27 @@ import tensorflow as tf
 
 from docopt import docopt
 
+PREFIX ='prefix'
 
-def freeze_graph(model_dir, node_names):
+
+def load(frozen_graph_filename):
+    ''' loads serialized tensorflow graph '''
+    # load the protobuf file from the disk and parse it to 
+    # retrieve the unserialized graph_def
+    with tf.gfile.GFile(frozen_graph_filename, "rb") as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+
+    # Then, we import the graph_def into a new Graph and returns it 
+    with tf.Graph().as_default() as graph:
+        # The name var will prefix every op/nodes in your graph
+        # Since we load everything in a new graph, this is not needed
+        tf.import_graph_def(graph_def, name=PREFIX)
+
+    return graph
+
+
+def freeze(model_dir, node_names):
     '''
     Extracts the sub-graph defined by the nodes and converts
     all its variables into constants
@@ -73,4 +94,4 @@ def freeze_graph(model_dir, node_names):
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='text')
-    freeze_graph(args['MODEL_DIR'], args['NODE_NAMES'])
+    freeze(args['MODEL_DIR'], args['NODE_NAMES'])

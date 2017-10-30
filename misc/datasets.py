@@ -214,10 +214,14 @@ class TextDataset(object):
         self.train = None
         self.test = None
         self.workdir = workdir
+
+        #TODO: why not just pass the path to the embeddings?
         if embedding_type == 'cnn-rnn':
             self.embedding_filename = '/char-CNN-RNN-embeddings.pickle'
         elif embedding_type == 'skip-thought':
             self.embedding_filename = '/skip-thought-embeddings.pickle'
+        elif embedding_type == 'custom':
+            self.embedding_filename = '/custom-embeddings.pickle'
 
     def get_data(self, pickle_path, aug_flag=True):
         with open(pickle_path + self.image_filename, 'rb') as f:
@@ -230,9 +234,11 @@ class TextDataset(object):
             embeddings = np.array(embeddings)
             self.embedding_shape = [embeddings.shape[-1]]
             print('embeddings: ', embeddings.shape)
+
         with open(pickle_path + '/filenames.pickle', 'rb') as f:
             list_filenames = pickle.load(f)
             print('list_filenames: ', len(list_filenames), list_filenames[0])
+
         with open(pickle_path + '/class_info.pickle', 'rb') as f:
             class_id = pickle.load(f)
 
