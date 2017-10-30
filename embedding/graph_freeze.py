@@ -42,7 +42,7 @@ def freeze_graph(model_dir, node_names):
         input_checkpoint = os.path.join(model_dir, 'model')
 
     # We precise the file fullname of our freezed graph
-    output_graph = os.path.join(os.path.dirname(model_dir), "frozen_model.pb")
+    output_graph = os.path.join(model_dir, "frozen_model.pb")
 
     # We clear devices to allow TensorFlow to control on which device it will load operations
     clear_devices = True
@@ -63,6 +63,7 @@ def freeze_graph(model_dir, node_names):
             node_names)                             # The nodes are used to select the subgraphs nodes
 
         # Serialize and dump the output subgraph to the filesystem
+        logger.info("Saving graph to: %s" % output_graph)
         with tf.gfile.GFile(output_graph, 'wb') as f:
             f.write(output_graph_def.SerializeToString())
 
