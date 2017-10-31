@@ -1,5 +1,5 @@
 '''
-This module contains a simple wrapper around tensorflow graph. It is used to embed sequences of texts
+This module contains a simple wrapper around Tensorflow graph. It is used to embed sequences of texts
 '''
 import os
 import sys
@@ -12,7 +12,7 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 
 from graph import PREFIX, load
-#TODO: put thin in confing
+#TODO: put this in configuration file 
 INPUT_TENSOR_NAME='embedding_1_input:0'
 OUTPUT_TENSOR_NAME='embedding/Relu:0'
 LEARNING_PAHSE='dropout_1/keras_learning_phase:0'
