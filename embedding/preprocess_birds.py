@@ -36,6 +36,7 @@ def zip_and_save(inpath, filenames, outpath, reader):
         for txt in txts:
             yield "%s %s\n" % (cls, txt)
 
+
 def preprocess_birds(data_path, reader):
     train_dir = os.path.join(data_path, 'train/')
     train_filenames = load_filenames(train_dir)

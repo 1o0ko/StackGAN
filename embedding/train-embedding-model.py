@@ -7,18 +7,29 @@ Arguments:
     GLOVE          file where glove vectors are saved
 
 Options:
-    -e, --epochs=<int>           Limit on the number of parsed lines
-                                 [default: 10]
     -w, --words=<int>            Maximum number of words in dictionary
                                  [default: 7000]
     -s, --sent-length=<int>      Maximum number of words in the sentence
                                  [default: 400]
-    -s, --dropout=<float>        Dropout rate
+
+    -d, --dropout=<float>        Dropout rate
                                  [default: 0.2]
+
+    -e, --epochs=<int>           Limit on the number of parsed lines
+                                 [default: 10]
+    -b, --batch-size=<int>       Size of the batch used for training
+                                 [default: 128]
+
+    -v, --verbose                Boolean flag setting the amout of logging
 """
 import os
 import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',)
+
 import string
+import pickle
 
 import keras
 import numpy as np
@@ -56,17 +67,24 @@ def normalize(text, black_list=BLACK_LIST, vocab=None,
     return text
 
 
-def load_and_process(data_path, num_words, maxlen):
+def load_and_process(data_path, num_words, maxlen, verbose=False):
     logger = logging.getLogger(__name__)
     with open(data_path, 'rt') as f:
         classes, texts = zip(*[line.split(" ", 1) for line in f.readlines()])
 
         # class preprocessing
         classes = [cls[9:] for cls in classes]
+        classes_stats = Counter(classes).most_common()
         class_to_id = {
-            key: index for (index, (key, value)) in enumerate(Counter(classes).most_common())
+            key: index for (index, (key, value)) in enumerate(classes_stats)
         }
         ids = to_categorical([class_to_id[cls] for cls in classes])
+
+        if verbose:
+            logger.info("Class statistics")
+            logger.info("Found %i classes" % len(classes_stats))
+            for key, value in classes_stats:
+                logger.info("\t %s: %i" % (key, value))
 
     # Setting up keras tokenzer
     tokenizer = Tokenizer(num_words=num_words)
@@ -86,7 +104,7 @@ def load_and_process(data_path, num_words, maxlen):
     logger.debug('Shape of data tensor: %s', data.shape)
     logger.debug('Shape of label tensor: %s', ids.shape)
 
-    return data, ids, word_index
+    return data, ids, tokenizer 
 
 
 def load_glove_embeddings(embedding_path, word_index,
@@ -198,8 +216,8 @@ def main(args):
     logger.setLevel(logging.DEBUG)
 
     # load and process data
-    data, labels, word_index = load_and_process(
-        args['DATA_PATH'], int(args['--words']), int(args['--sent-length'])
+    data, labels, tokenizer = load_and_process(
+        args['DATA_PATH'], int(args['--words']), int(args['--sent-length']), bool(args['--verbose'])
     )
     nb_classes = labels.shape[1]
 
@@ -207,23 +225,26 @@ def main(args):
     x_train, y_train, x_val, y_val = train_val_split(data, labels, 0.1)
 
     # Build and train a model
-    model = build_model(
-        word_index, args['GLOVE'], int(args['--sent-length']), float(args['--dropout']), nb_classes)
+    model = build_model(tokenizer.word_index,
+                        args['GLOVE'],
+                        int(args['--sent-length']),
+                        float(args['--dropout']),
+                        nb_classes)
     model.summary()
     model.fit(
         x_train, y_train,
         validation_data=(x_val, y_val),
         epochs=int(args['--epochs']),
-        batch_size=128,
-        verbose=1)
+        batch_size=int(args['--batch-size']),
+        verbose=int(args['--verbose']))
 
     # evalute model on train data to see how well we're fitting the data
     logger.info("Train data")
-    logger.info(model.evaluate(x_train, y_train, batch_size=128))
+    model.evaluate(x_train, y_train, batch_size=128))
 
     # evalute model on validation data
     logger.info("Validation data")
-    logger.info(model.evaluate(x_val, y_val, batch_size=128))
+    model.evaluate(x_val, y_val, batch_size=128))
 
     # all new operations will be in test mode from now on (dropout, etc.)
     K.set_learning_phase(0)
@@ -232,7 +253,10 @@ def main(args):
     with K.get_session() as sess:
         saver.save(sess, os.path.join(args['OUTPUT_PATH'], 'model'))
 
+    with open(os.path.join(args['OUTPUT_PATH'], 'tokenizer.pickle'), 'wb') as f:
+        pickle.dump(tokenizer, f, protocol=2)
+
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='0.1')
-    mai(args)
+    main(args)
