@@ -13,7 +13,7 @@ Options:
                                 [default: birds]
 
     -m, --embeddings-name=<str> Name used to saved pickled model
-                                [default: custom_embeddings]
+                                [default: custom-embeddings]
 """
 import os
 import logging

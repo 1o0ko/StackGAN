@@ -3,15 +3,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-# import tensorflow as tf
-import numpy as np
 import os
 import pickle
-from misc.utils import get_image
-import scipy.misc
-import pandas as pd
 
-# from glob import glob
+import numpy as np
+import pandas as pd
+import scipy.misc
+
+from misc.utils import get_image, load_filenames
 
 # TODO: 1. current label is temporary, need to change according to real label
 #       2. Current, only split the data into train, need to handel train, test
@@ -20,14 +19,6 @@ LR_HR_RETIO = 4
 IMSIZE = 256
 LOAD_SIZE = int(IMSIZE * 76 / 64)
 BIRD_DIR = '/data/birds'
-
-
-def load_filenames(data_dir):
-    filepath = data_dir + 'filenames.pickle'
-    with open(filepath, 'rb') as f:
-        filenames = pickle.load(f)
-    print('Load filenames from: %s (%d)' % (filepath, len(filenames)))
-    return filenames
 
 
 def load_bbox(data_dir):

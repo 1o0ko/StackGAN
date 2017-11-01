@@ -11,6 +11,14 @@ import os
 import errno
 
 
+def load_filenames(data_dir):
+    filepath = os.path.join(data_dir, 'filenames.pickle')
+    with open(filepath, 'rb') as f:
+        filenames = pickle.load(f)
+    print('Load filenames from: %s (%d)' % (filepath, len(filenames)))
+    return filenames
+
+
 def get_image(image_path, image_size, is_crop=False, bbox=None):
     global index
     out = transform(imread(image_path), image_size, is_crop, bbox)

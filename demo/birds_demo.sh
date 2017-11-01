@@ -10,6 +10,7 @@ export CUDA_VISIBLE_DEVICES=${GPU}
 net_txt=models/text_encoder/${CUB_ENCODER} \
 queries=${CAPTION_PATH}.txt \
 filenames=${CAPTION_PATH}.t7 \
+gpu=${GPU} \
 th demo/get_embedding.lua
 
 #

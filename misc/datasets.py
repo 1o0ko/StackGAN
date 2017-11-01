@@ -59,11 +59,14 @@ class Dataset(object):
         if name.find('jpg/') != -1:  # flowers dataset
             class_name = 'class_%05d/' % class_id
             name = name.replace('jpg/', class_name)
-        cap_path = '%s/text_c10/%s.txt' %\
-                   (self.workdir, name)
+
+        cap_path = '%s/text_c10/%s.txt' %\ (self.workdir, name)
+
         with open(cap_path, "r") as f:
             captions = f.read().split('\n')
+
         captions = [cap for cap in captions if len(cap) > 0]
+
         return captions
 
     def transform(self, images):

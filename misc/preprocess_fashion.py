@@ -5,7 +5,6 @@ import os
 
 FASHION_DIR = '/data/fashion'
 
-
 def load_filenames(data_dir):
     pass
 
