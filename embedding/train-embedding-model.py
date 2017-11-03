@@ -104,7 +104,7 @@ def load_and_process(data_path, num_words, maxlen, verbose=False):
     logger.debug('Shape of data tensor: %s', data.shape)
     logger.debug('Shape of label tensor: %s', ids.shape)
 
-    return data, ids, tokenizer 
+    return data, ids, tokenizer
 
 
 def load_glove_embeddings(embedding_path, word_index,

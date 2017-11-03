@@ -89,6 +89,7 @@ class Dataset(object):
     def sample_embeddings(self, embeddings, filenames, class_id, sample_num):
         sampled_captions = []
         if len(embeddings.shape) == 2 or embeddings.shape[1] == 1:
+            batch_size = embeddings.shape[0]
             if sample_num == 1:
                 for i in range(batch_size):
                     captions = self.readCaptions(filenames[i], class_id[i])
@@ -158,10 +159,7 @@ class Dataset(object):
             sampled_embeddings, sampled_captions = \
                 self.sample_embeddings(
                     self._embeddings[current_ids],
-                    filenames,
-                    class_id,
-                    window
-                )
+                    filenames, class_id, window)
             ret_list.append(sampled_embeddings)
             ret_list.append(sampled_captions)
         else:
