@@ -59,7 +59,11 @@ class Dataset(object):
             class_name = 'class_%05d/' % class_id
             name = name.replace('jpg/', class_name)
 
-        cap_path = '%s/text_c10/%s.txt' % (self.workdir, name)
+        # TODO: this is fugly, change the fashion stuff 
+        if 'fashion' in self.workdir:
+            cap_path = '%s/text_c10/%s' % (self.workdir, name)
+        else:
+            cap_path = '%s/text_c10/%s.txt' % (self.workdir, name)
 
         with open(cap_path, "r") as f:
             captions = f.read().split('\n')
@@ -89,7 +93,7 @@ class Dataset(object):
     def sample_embeddings(self, embeddings, filenames, class_id, sample_num):
         sampled_captions = []
         if len(embeddings.shape) == 2 or embeddings.shape[1] == 1:
-            batch_size = embeddings.shape[0]
+            batch_size = embeddings.shape[0] 
             if sample_num == 1:
                 for i in range(batch_size):
                     captions = self.readCaptions(filenames[i], class_id[i])
