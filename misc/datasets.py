@@ -54,19 +54,19 @@ class Dataset(object):
         np.random.shuffle(self._saveIDs)
         return self._saveIDs
 
-    def readCaptions(self, filenames, class_id):
-        name = filenames
+    def readCaptions(self, name, class_id):
         if name.find('jpg/') != -1:  # flowers dataset
             class_name = 'class_%05d/' % class_id
             name = name.replace('jpg/', class_name)
 
-        cap_path = '%s/text_c10/%s.txt' %\ (self.workdir, name)
+        cap_path = '%s/text_c10/%s.txt' % (self.workdir, name)
 
         with open(cap_path, "r") as f:
             captions = f.read().split('\n')
 
         captions = [cap for cap in captions if len(cap) > 0]
 
+        import ipdb; ipdb.set_trace()
         return captions
 
     def transform(self, images):

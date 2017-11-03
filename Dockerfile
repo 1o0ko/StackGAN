@@ -4,7 +4,7 @@
 FROM tensorflow/tensorflow:0.12.1-gpu
 
 RUN apt-get update && apt-get install -y \
-    git libhdf5-dev wget ttf-freefont
+    git libhdf5-dev wget ttf-freefont htop
 
 # Install tini 
 RUN apt-get install -y curl grep sed dpkg && \

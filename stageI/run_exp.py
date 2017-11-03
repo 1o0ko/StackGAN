@@ -24,10 +24,9 @@ def parse_args():
     parser.add_argument('--gpu', dest='gpu_id',
                         help='GPU device id to use [0]',
                         default=-1, type=int)
-    # if len(sys.argv) == 1:
-    #    parser.print_help()
-    #    sys.exit(1)
+
     args = parser.parse_args()
+
     return args
 
 if __name__ == "__main__":
@@ -50,8 +49,7 @@ if __name__ == "__main__":
         filename_train = '%s/train' % (datadir)
         dataset.train = dataset.get_data(filename_train)
 
-        ckt_logs_dir = "ckt_logs/%s/%s_%s" % \
-            (cfg.DATASET_NAME, cfg.CONFIG_NAME, timestamp)
+        ckt_logs_dir = "ckt_logs/%s/%s_%s" %  (cfg.DATASET_NAME, cfg.CONFIG_NAME, timestamp)
         mkdir_p(ckt_logs_dir)
     else:
         s_tmp = cfg.TRAIN.PRETRAINED_MODEL

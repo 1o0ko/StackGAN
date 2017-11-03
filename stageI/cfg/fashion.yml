@@ -1,7 +1,7 @@
 CONFIG_NAME: 'stageI'
 
 DATASET_NAME: 'fashion'
-EMBEDDING_TYPE: 'cnn-rnn'
+EMBEDDING_TYPE: 'custom'
 GPU_ID: 0
 Z_DIM: 100
 

@@ -33,7 +33,7 @@ class Model(object):
         self.persistent_sess = tf.Session(graph=graph)
 
         # load the max sentence padding from input tensor shape
-        self.maxlen = self.X.shape[1].value
+        self.maxlen = self.X.get_shape()[1].value
 
     def embed(self, texts):
         ''' use model to find prediction '''

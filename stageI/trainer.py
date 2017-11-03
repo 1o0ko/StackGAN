@@ -444,8 +444,6 @@ class CondGANTrainer(object):
                     print("Reading model parameters from %s" % self.model_path)
                     saver = tf.train.Saver(tf.all_variables())
                     saver.restore(sess, self.model_path)
-                    # self.eval_one_dataset(sess, self.dataset.train,
-                    #                       self.log_dir, subset='train')
                     self.eval_one_dataset(sess, self.dataset.test,
                                           self.log_dir, subset='test')
                 else:
