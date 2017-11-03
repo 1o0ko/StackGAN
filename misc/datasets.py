@@ -66,7 +66,6 @@ class Dataset(object):
 
         captions = [cap for cap in captions if len(cap) > 0]
 
-        import ipdb; ipdb.set_trace()
         return captions
 
     def transform(self, images):
@@ -88,23 +87,28 @@ class Dataset(object):
             return images
 
     def sample_embeddings(self, embeddings, filenames, class_id, sample_num):
+        sampled_captions = []
         if len(embeddings.shape) == 2 or embeddings.shape[1] == 1:
-            return np.squeeze(embeddings)
+            if sample_num == 1:
+                for i in range(batch_size):
+                    captions = self.readCaptions(filenames[i], class_id[i])
+                    sampled_captions.append(captions[0])
+            else:
+                return np.squeeze(embeddings), sampled_captions
         else:
             batch_size, embedding_num, _ = embeddings.shape
             # Take every sample_num captions to compute the mean vector
             sampled_embeddings = []
-            sampled_captions = []
             for i in range(batch_size):
                 randix = np.random.choice(embedding_num,
                                           sample_num, replace=False)
                 if sample_num == 1:
                     randix = int(randix)
-                    captions = self.readCaptions(filenames[i],
-                                                 class_id[i])
+                    captions = self.readCaptions(filenames[i], class_id[i])
                     sampled_captions.append(captions[randix])
                     sampled_embeddings.append(embeddings[i, randix, :])
                 else:
+                    # I don't know why, but we're not sampling captions here
                     e_sample = embeddings[i, randix, :]
                     e_mean = np.mean(e_sample, axis=0)
                     sampled_embeddings.append(e_mean)
@@ -152,8 +156,12 @@ class Dataset(object):
             filenames = [self._filenames[i] for i in current_ids]
             class_id = [self._class_id[i] for i in current_ids]
             sampled_embeddings, sampled_captions = \
-                self.sample_embeddings(self._embeddings[current_ids],
-                                       filenames, class_id, window)
+                self.sample_embeddings(
+                    self._embeddings[current_ids],
+                    filenames,
+                    class_id,
+                    window
+                )
             ret_list.append(sampled_embeddings)
             ret_list.append(sampled_captions)
         else:
@@ -244,6 +252,7 @@ class TextDataset(object):
 
         with open(pickle_path + '/class_info.pickle', 'rb') as f:
             class_id = pickle.load(f)
+            print('class_id: ', len(class_id), class_id[0])
 
         return Dataset(images, self.image_shape[0], embeddings,
                        list_filenames, self.workdir, None,

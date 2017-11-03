@@ -278,7 +278,7 @@ class CondGANTrainer(object):
 
     def build_model(self, sess):
         self.init_opt()
-        sess.run(tf.initialize_all_variables())
+        sess.run(tf.global_variables_initializer())
 
         if len(self.model_path) > 0:
             print("Reading model parameters from %s" % self.model_path)
@@ -304,12 +304,11 @@ class CondGANTrainer(object):
         with tf.Session(config=config) as sess:
             with tf.device("/gpu:%d" % cfg.GPU_ID):
                 counter = self.build_model(sess)
-                saver = tf.train.Saver(tf.all_variables(),
+                saver = tf.train.Saver(tf.global_variables(),
                                        keep_checkpoint_every_n_hours=2)
 
                 # summary_op = tf.merge_all_summaries()
-                summary_writer = tf.train.SummaryWriter(self.log_dir,
-                                                        sess.graph)
+                summary_writer = tf.summary.FileWriter(self.log_dir, sess.graph)
 
                 keys = ["d_loss", "g_loss"]
                 log_vars = []
@@ -342,8 +341,7 @@ class CondGANTrainer(object):
                         pbar.update(i)
                         # training d
                         images, wrong_images, embeddings, _, _ =\
-                            self.dataset.train.next_batch(self.batch_size,
-                                                          num_embedding)
+                            self.dataset.train.next_batch(self.batch_size, num_embedding)
                         feed_dict = {self.images: images,
                                      self.wrong_images: wrong_images,
                                      self.embeddings: embeddings,
