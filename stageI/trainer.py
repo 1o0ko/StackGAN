@@ -237,11 +237,13 @@ class CondGANTrainer(object):
     def epoch_sum_images(self, sess, n):
         images_train, _, embeddings_train, captions_train, _ =\
             self.dataset.train.next_batch(n * n, cfg.TRAIN.NUM_EMBEDDING)
+
         images_train = self.preprocess(images_train, n)
         embeddings_train = self.preprocess(embeddings_train, n)
 
         images_test, _, embeddings_test, captions_test, _ = \
             self.dataset.test.next_batch(n * n, 1)
+
         images_test = self.preprocess(images_test, n)
         embeddings_test = self.preprocess(embeddings_test, n)
 

@@ -93,13 +93,17 @@ class Dataset(object):
     def sample_embeddings(self, embeddings, filenames, class_id, sample_num):
         sampled_captions = []
         if len(embeddings.shape) == 2 or embeddings.shape[1] == 1:
-            batch_size = embeddings.shape[0] 
-            if sample_num == 1:
-                for i in range(batch_size):
-                    captions = self.readCaptions(filenames[i], class_id[i])
-                    sampled_captions.append(captions[0])
-            else:
-                return np.squeeze(embeddings), sampled_captions
+            try:
+                batch_size = embeddings.shape[0] 
+                if sample_num == 1:
+                    for i in range(batch_size):
+                        captions = self.readCaptions(filenames[i], class_id[i])
+                        sampled_captions.append(captions[0])
+                else:
+                    return np.squeeze(embeddings), sampled_captions
+            except Exception:
+                import ipdb; ipdb.set_trace()
+                raise Exception
         else:
             batch_size, embedding_num, _ = embeddings.shape
             # Take every sample_num captions to compute the mean vector
@@ -160,10 +164,15 @@ class Dataset(object):
         if self._embeddings is not None:
             filenames = [self._filenames[i] for i in current_ids]
             class_id = [self._class_id[i] for i in current_ids]
-            sampled_embeddings, sampled_captions = \
-                self.sample_embeddings(
-                    self._embeddings[current_ids],
-                    filenames, class_id, window)
+            try:
+                sampled_embeddings, sampled_captions = \
+                    self.sample_embeddings(
+                        self._embeddings[current_ids],
+                        filenames, class_id, window)
+            except Exception:
+                import ipdb; ipdb.set_trace()
+                raise Exception
+
             ret_list.append(sampled_embeddings)
             ret_list.append(sampled_captions)
         else:
