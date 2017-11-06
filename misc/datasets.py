@@ -91,21 +91,15 @@ class Dataset(object):
             return images
 
     def sample_embeddings(self, embeddings, filenames, class_id, sample_num):
+        batch_size, embedding_num, _ = embeddings.shape
         sampled_captions = []
-        if len(embeddings.shape) == 2 or embeddings.shape[1] == 1:
-            try:
-                batch_size = embeddings.shape[0] 
-                if sample_num == 1:
-                    for i in range(batch_size):
-                        captions = self.readCaptions(filenames[i], class_id[i])
-                        sampled_captions.append(captions[0])
-                else:
-                    return np.squeeze(embeddings), sampled_captions
-            except Exception:
-                import ipdb; ipdb.set_trace()
-                raise Exception
+
+        if embedding_num == 1 or len(embeddings.shape) == 2:
+            for i in range(batch_size):
+                captions = self.readCaptions(filenames[i], class_id[i])
+                sampled_captions.append(captions[0])
+            return np.squeeze(embeddings), sampled_captions
         else:
-            batch_size, embedding_num, _ = embeddings.shape
             # Take every sample_num captions to compute the mean vector
             sampled_embeddings = []
             for i in range(batch_size):
@@ -123,6 +117,7 @@ class Dataset(object):
                     sampled_embeddings.append(e_mean)
             sampled_embeddings_array = np.array(sampled_embeddings)
             return np.squeeze(sampled_embeddings_array), sampled_captions
+
 
     def next_batch(self, batch_size, window):
         """Return the next `batch_size` examples from this data set."""
