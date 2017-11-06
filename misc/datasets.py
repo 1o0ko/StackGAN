@@ -23,20 +23,27 @@ from registry import register, datastore
   self.next_batch(n * n, cfg.TRAIN.NUM_EMBEDDING)
   self._num_examples
 '''
+class BaseDataset(object):
+    def __init__(self, workdir, embedding_filename, hr_lr_ratio):
+        self.workdir = workdir
+        self.embedding_filename = embedding_filename
+        self.hr_lr_ratio = hr_lr_ratio
+
+    def __repr__(self):
+        return "[%s]\nWorkdir: %s\nEmbedding filename: %s\nHR to LR ration: %i" % \
+                (self.__class__.__name__, self.workdir, self.embedding_filename, self.hr_lr_ratio)
 
 @register
-class StreamingDataset(object):
-    def __init__(datadir, embedding_filename, hr_lr_ratio):
-        self.datadir = datadir
-        self.embedding_filename = embedding_filename
-        self.hr_lr_ratio = hr_lr_ratio
+class StreamingDataset(BaseDataset):
+    def __init__(self, *args, **kwargs):
+        super(StreamingDataset, self).__init__(*args, **kwargs)
 
-@register(default=True)
-class DefaultDataset(object):
-    def __init__(datadir, embedding_filename, hr_lr_ratio):
-        self.datadir = datadir
-        self.embedding_filename = embedding_filename
-        self.hr_lr_ratio = hr_lr_ratio
+
+@register
+class DefaultDataset(BaseDataset):
+    def __init__(self, *args, **kwargs):
+        super(DefaultDataset, self).__init__(*args, **kwargs)
+
 
 class Dataset(object):
     def __init__(self, images, imsize, embeddings=None,
@@ -245,11 +252,12 @@ class Dataset(object):
         return [sampled_images, sampled_embeddings_batchs,
                 self._saveIDs[start:end], sampled_captions]
 
-@register
-class TextDataset(object):
-    def __init__(self, workdir, embedding_filename, hr_lr_ratio):
+@register(default=True)
+class TextDataset(BaseDataset):
+    def __init__(self, *args, **kwargs):
+        super(TextDataset, self).__init__(*args, **kwargs)
+
         self.lr_imsize = 64
-        self.hr_lr_ratio = hr_lr_ratio
 
         if self.hr_lr_ratio == 1:
             self.image_filename = '/76images.pickle'
@@ -262,8 +270,6 @@ class TextDataset(object):
         self.embedding_shape = None
         self.train = None
         self.test = None
-        self.workdir = workdir
-        self.embedding_filename = embedding_filename
 
     def get_data(self, pickle_path, aug_flag=True):
         with open(pickle_path + self.image_filename, 'rb') as f:
@@ -296,17 +302,20 @@ def load_cfg():
     from easydict import EasyDict as edict
 
     parser = argparse.ArgumentParser(description='Test dataset factory')
+    parser.add_argument('--path', dest = 'data_path',
+                        default='/data/', type=str)
     parser.add_argument('--cfg', dest='cfg', type=str)
 
     args = parser.parse_args()
     with open(args.cfg, 'r') as f:
         cfg = edict(yaml.load(f))
 
-    return cfg
+    return args, cfg
 
 if __name__ == '__main__':
-    cfg = load_cfg()
-    dataset = datastore.create(datadir, cfg, hr_lr_ratio = 1)
+    args, cfg = load_cfg()
+    datadir = '%s%s' % (args.data_path, cfg.DATASET_NAME)
+    dataset = datastore.create(datadir, cfg)
 
     print(datastore)
     print(dataset)

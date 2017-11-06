@@ -16,7 +16,7 @@ class DataStore(list):
         else:
             clazz_ = self._default if self._default else self[0]
 
-        return clazz_()
+        return clazz_(datadir, cfg.EMBEDDING_FILENAME, cfg.HR_LR_RATIO)
 
 datastore = DataStore()
 
