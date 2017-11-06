@@ -62,10 +62,12 @@ class CondGANTrainer(object):
         self.hr_images = tf.placeholder(
             tf.float32, [self.batch_size] + self.hr_image_shape,
             name='real_hr_images')
+
         self.hr_wrong_images = tf.placeholder(
             tf.float32, [self.batch_size] + self.hr_image_shape,
             name='wrong_hr_images'
         )
+
         self.embeddings = tf.placeholder(
             tf.float32, [self.batch_size] + self.dataset.embedding_shape,
             name='conditional_embeddings'
@@ -75,10 +77,12 @@ class CondGANTrainer(object):
             tf.float32, [],
             name='generator_learning_rate'
         )
+
         self.discriminator_lr = tf.placeholder(
             tf.float32, [],
             name='discriminator_learning_rate'
         )
+
         #
         self.images = tf.image.resize_bilinear(self.hr_images,
                                                self.lr_image_shape[:2])
