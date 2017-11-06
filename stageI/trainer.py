@@ -198,9 +198,9 @@ class CondGANTrainer(object):
             elif k.startswith('hist'):
                 all_sum['hist'].append(tf.histogram_summary(k, v))
 
-        self.g_sum = tf.merge_summary(all_sum['g'])
-        self.d_sum = tf.merge_summary(all_sum['d'])
-        self.hist_sum = tf.merge_summary(all_sum['hist'])
+        self.g_sum = tf.summary.merge(all_sum['g'])
+        self.d_sum = tf.summary.merge(all_sum['d'])
+        self.hist_sum = tf.summary.merge(all_sum['hist'])
 
     def visualize_one_superimage(self, img_var, images, rows, filename):
         stacked_img = []
@@ -225,7 +225,7 @@ class CondGANTrainer(object):
                                           self.images[n * n:2 * n * n],
                                           n, "test")
         self.superimages = tf.concat(0, [superimage_train, superimage_test])
-        self.image_summary = tf.merge_summary([fake_sum_train, fake_sum_test])
+        self.image_summary = tf.summary.merge([fake_sum_train, fake_sum_test])
 
     def preprocess(self, x, n):
         # make sure every row with n column have the same embeddings
