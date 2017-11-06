@@ -6,6 +6,37 @@ import numpy as np
 import pickle
 import random
 
+from registry import register, datastore
+
+
+'''
+ Stuff that is calling the dataset object uses this methods
+ dataset.embedding_shape,
+ dataset.image_shape,
+ dataset._num_examples:
+ dataset.hr_lr_ratio
+ dataset.next_batch_test(self.batch_size, start, 1)
+
+
+ dataset exposes test/train with
+  self.next_batch(n * n, 1)
+  self.next_batch(n * n, cfg.TRAIN.NUM_EMBEDDING)
+  self._num_examples
+'''
+
+@register
+class StreamingDataset(object):
+    def __init__(datadir, embedding_filename, hr_lr_ratio):
+        self.datadir = datadir
+        self.embedding_filename = embedding_filename
+        self.hr_lr_ratio = hr_lr_ratio
+
+@register(default=True)
+class DefaultDataset(object):
+    def __init__(datadir, embedding_filename, hr_lr_ratio):
+        self.datadir = datadir
+        self.embedding_filename = embedding_filename
+        self.hr_lr_ratio = hr_lr_ratio
 
 class Dataset(object):
     def __init__(self, images, imsize, embeddings=None,
@@ -214,31 +245,25 @@ class Dataset(object):
         return [sampled_images, sampled_embeddings_batchs,
                 self._saveIDs[start:end], sampled_captions]
 
-
+@register
 class TextDataset(object):
-    def __init__(self, workdir, embedding_type, hr_lr_ratio):
-        lr_imsize = 64
+    def __init__(self, workdir, embedding_filename, hr_lr_ratio):
+        self.lr_imsize = 64
         self.hr_lr_ratio = hr_lr_ratio
+
         if self.hr_lr_ratio == 1:
             self.image_filename = '/76images.pickle'
         elif self.hr_lr_ratio == 4:
             self.image_filename = '/304images.pickle'
 
-        self.image_shape = [lr_imsize * self.hr_lr_ratio,
-                            lr_imsize * self.hr_lr_ratio, 3]
+        self.image_shape = [self.lr_imsize * self.hr_lr_ratio,
+                            self.lr_imsize * self.hr_lr_ratio, 3]
         self.image_dim = self.image_shape[0] * self.image_shape[1] * 3
         self.embedding_shape = None
         self.train = None
         self.test = None
         self.workdir = workdir
-
-        #TODO: why not just pass the path to the embeddings?
-        if embedding_type == 'cnn-rnn':
-            self.embedding_filename = '/char-CNN-RNN-embeddings.pickle'
-        elif embedding_type == 'skip-thought':
-            self.embedding_filename = '/skip-thought-embeddings.pickle'
-        elif embedding_type == 'custom':
-            self.embedding_filename = '/custom-embeddings.pickle'
+        self.embedding_filename = embedding_filename
 
     def get_data(self, pickle_path, aug_flag=True):
         with open(pickle_path + self.image_filename, 'rb') as f:
@@ -263,3 +288,25 @@ class TextDataset(object):
         return Dataset(images, self.image_shape[0], embeddings,
                        list_filenames, self.workdir, None,
                        aug_flag, class_id)
+
+def load_cfg():
+    import argparse
+    import yaml
+
+    from easydict import EasyDict as edict
+
+    parser = argparse.ArgumentParser(description='Test dataset factory')
+    parser.add_argument('--cfg', dest='cfg', type=str)
+
+    args = parser.parse_args()
+    with open(args.cfg, 'r') as f:
+        cfg = edict(yaml.load(f))
+
+    return cfg
+
+if __name__ == '__main__':
+    cfg = load_cfg()
+    dataset = datastore.create(datadir, cfg, hr_lr_ratio = 1)
+
+    print(datastore)
+    print(dataset)

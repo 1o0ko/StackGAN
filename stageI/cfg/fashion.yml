@@ -1,9 +1,11 @@
 CONFIG_NAME: 'stageI'
 
 DATASET_NAME: 'fashion'
+DATASET_TYPE: 'StreamingDataset'
 EMBEDDING_FILENAME: '/custom-embeddings.pickle'
 GPU_ID: 0
 Z_DIM: 100
+HR_LR_RATIO: 1
 
 TRAIN:
     FLAG: True

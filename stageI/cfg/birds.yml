@@ -4,6 +4,7 @@ DATASET_NAME: 'birds'
 EMBEDDING_FILENAME: '/custom-embeddings.pickle'
 GPU_ID: 0
 Z_DIM: 100
+HR_LR_RATIO: 1
 
 TRAIN:
     FLAG: True

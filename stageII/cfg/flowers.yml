@@ -1,9 +1,10 @@
 CONFIG_NAME: 'stageII'
 
 DATASET_NAME: 'flowers'
-EMBEDDING_TYPE: 'cnn-rnn'
+EMBEDDING_FILENAME: '/char-CNN-RNN-embeddings.pickle'
 GPU_ID: 0
 Z_DIM: 100
+HR_LR_RATIO: 4
 
 TRAIN:
     FLAG: True

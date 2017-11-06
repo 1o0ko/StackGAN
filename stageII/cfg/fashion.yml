@@ -1,9 +1,11 @@
 CONFIG_NAME: 'stageII'
 
 DATASET_NAME: 'fashion'
-EMBEDDING_TYPE: 'cnn-rnn'
+DATASET_TYPE: 'StreamingDataset'
+EMBEDDING_FILENAME: '/custom-embeddings.pickle'
 GPU_ID: 0
 Z_DIM: 100
+HR_LR_RATIO: 4
 
 TRAIN:
     FLAG: True
