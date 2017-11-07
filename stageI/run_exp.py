@@ -48,7 +48,6 @@ if __name__ == "__main__":
     print('Using dataset:')
     print(dataset)
 
-    import ipdb; ipdb.set_trace()
     dataset.test = dataset.get_data('%s/test' % (datadir))
 
     if cfg.TRAIN.FLAG:

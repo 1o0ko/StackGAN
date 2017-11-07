@@ -13,9 +13,15 @@ class DataStore(list):
 
         self.append(cls)
 
+    def get_class(self, name):
+        return [clazz for clazz in self if name in clazz.__name__][0]
+
     def create(self, datadir, cfg):
-        if hasattr(cfg, 'DATASET_TYPE') and cfg.DATASET_TYPE in self:
-            clazz_ = cfg.DATASET_TYPE
+        if hasattr(cfg, 'DATASET_TYPE'):
+            try:
+                clazz_ = self.get_class(cfg.DATASET_TYPE)
+            except IndexError:
+                raise ValueError('Dataset %s is not registered' % cfg.DATASET_TYPE)
         else:
             clazz_ = self._default if self._default else self[0]
 
