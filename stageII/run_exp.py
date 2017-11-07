@@ -24,9 +24,6 @@ def parse_args():
     parser.add_argument('--gpu', dest='gpu_id',
                         help='GPU device id to use [0]',
                         default=-1, type=int)
-    # if len(sys.argv) == 1:
-    #    parser.print_help()
-    #    sys.exit(1)
     args = parser.parse_args()
     return args
 
