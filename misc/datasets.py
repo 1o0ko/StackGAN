@@ -33,17 +33,6 @@ class BaseDataset(object):
         return "[%s]\nWorkdir: %s\nEmbedding filename: %s\nHR to LR ration: %i" % \
                 (self.__class__.__name__, self.workdir, self.embedding_filename, self.hr_lr_ratio)
 
-@register
-class StreamingDataset(BaseDataset):
-    def __init__(self, *args, **kwargs):
-        super(StreamingDataset, self).__init__(*args, **kwargs)
-
-
-@register
-class DefaultDataset(BaseDataset):
-    def __init__(self, *args, **kwargs):
-        super(DefaultDataset, self).__init__(*args, **kwargs)
-
 
 class Dataset(object):
     def __init__(self, images, imsize, embeddings=None,
@@ -295,7 +284,7 @@ class TextDataset(BaseDataset):
                        list_filenames, self.workdir, None,
                        aug_flag, class_id)
 
-def load_cfg():
+if __name__ == '__main__':
     import argparse
     import yaml
 
@@ -310,12 +299,8 @@ def load_cfg():
     with open(args.cfg, 'r') as f:
         cfg = edict(yaml.load(f))
 
-    return args, cfg
-
-if __name__ == '__main__':
-    args, cfg = load_cfg()
     datadir = '%s%s' % (args.data_path, cfg.DATASET_NAME)
     dataset = datastore.create(datadir, cfg)
 
-    print(datastore)
+    print("Datastore: %s" % datastore)
     print(dataset)

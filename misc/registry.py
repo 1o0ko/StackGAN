@@ -1,6 +1,9 @@
 import types
 
 class DataStore(list):
+    '''
+    This class is used to register and instantiate datasets
+    '''
     def __init__(self):
         self._default = None
 
@@ -18,6 +21,8 @@ class DataStore(list):
 
         return clazz_(datadir, cfg.EMBEDDING_FILENAME, cfg.HR_LR_RATIO)
 
+
+#TODO: have a better way to handle the singleton pattern
 datastore = DataStore()
 
 

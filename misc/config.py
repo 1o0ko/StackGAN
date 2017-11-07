@@ -11,10 +11,12 @@ cfg = __C
 
 # Dataset name: flowers, birds
 __C.DATASET_NAME = 'birds'
-__C.EMBEDDING_TYPE = 'cnn-rnn'
+__C.DATASET_TYPE = 'TextDataset'
+__C.EMBEDDING_FILENAME = '/custom-embedding.pickle'
 __C.CONFIG_NAME = ''
 __C.GPU_ID = 0
 __C.Z_DIM = 100
+__C.HR_LR_RATIO = 1
 
 # Demo/test options
 __C.TEST = edict()
@@ -97,5 +99,4 @@ def cfg_from_file(filename):
     import yaml
     with open(filename, 'r') as f:
         yaml_cfg = edict(yaml.load(f))
-
     _merge_a_into_b(yaml_cfg, __C)

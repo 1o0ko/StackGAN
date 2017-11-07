@@ -8,12 +8,11 @@ import datetime
 import argparse
 import pprint
 
-from misc.datasets import TextDataset
 from stageII.model import CondGAN
 from stageII.trainer import CondGANTrainer
-from misc.utils import mkdir_p
 from misc.config import cfg, cfg_from_file
-
+from misc.registry import datastore
+from misc.utils import mkdir_p
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a GAN network')
@@ -47,9 +46,12 @@ if __name__ == "__main__":
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
 
     datadir = '%s/%s' % (args.data_path, cfg.DATASET_NAME)
-    dataset = TextDataset(datadir,  cfg.EMBEDDING_TYPE, 4)
-    dataset.test = dataset.get_data('%s/test' % (datadir))
+    dataset = datastore.create(datadir, cfg)
 
+    print('Using dataset:')
+    print(dataset)
+
+    dataset.test = dataset.get_data('%s/test' % (datadir))
     if cfg.TRAIN.FLAG:
         dataset.train = dataset.get_data('%s/train' % (datadir))
         ckt_logs_dir = "ckt_logs/%s/%s_%s" % \

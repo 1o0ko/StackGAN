@@ -7,12 +7,11 @@ import datetime
 import argparse
 import pprint
 
-from misc.datasets import TextDataset
 from stageI.model import CondGAN
 from stageI.trainer import CondGANTrainer
-from misc.utils import mkdir_p
 from misc.config import cfg, cfg_from_file
-
+from misc.registry import datastore
+from misc.utils import mkdir_p
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a GAN network')
@@ -44,7 +43,12 @@ if __name__ == "__main__":
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
 
     datadir = '%s%s' % (args.data_path, cfg.DATASET_NAME)
-    dataset = TextDataset(datadir, cfg.EMBEDDING_FILENAME, 1)
+    dataset = datastore.create(datadir, cfg)
+
+    print('Using dataset:')
+    print(dataset)
+
+    import ipdb; ipdb.set_trace()
     dataset.test = dataset.get_data('%s/test' % (datadir))
 
     if cfg.TRAIN.FLAG:
