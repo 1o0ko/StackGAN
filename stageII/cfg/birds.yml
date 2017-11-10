@@ -8,7 +8,7 @@ HR_LR_RATIO: 4
 
 TRAIN:
     FLAG: True
-    PRETRAINED_MODEL: './ckt_logs/birds/stageI_2017_10_31_20_35_13/model_82000.ckpt'
+    PRETRAINED_MODEL: './ckt_logs/birds/stageI_2017_11_10_16_06_11/model_82000.ckpt'
     PRETRAINED_EPOCH: 600
     BATCH_SIZE: 64
     NUM_COPY: 4
