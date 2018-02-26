@@ -54,8 +54,7 @@ from docopt import docopt
 BLACK_LIST = string.punctuation.replace('%', '').replace('-', '') + '\n'
 
 
-def normalize(text, black_list=BLACK_LIST, vocab=None,
-              lowercase=True, tokenize=False):
+def normalize(text, black_list=BLACK_LIST, vocab=None,lowercase=True, tokenize=False):
     if black_list:
         text = text.translate(None, BLACK_LIST)
     if lowercase:
@@ -73,7 +72,6 @@ def load_and_process(data_path, num_words, maxlen, verbose=False):
         classes, texts = zip(*[line.split(" ", 1) for line in f.readlines()])
 
         # class preprocessing
-        classes = [cls[9:] for cls in classes]
         classes_stats = Counter(classes).most_common()
         class_to_id = {
             key: index for (index, (key, value)) in enumerate(classes_stats)
@@ -217,7 +215,10 @@ def main(args):
 
     # load and process data
     data, labels, tokenizer = load_and_process(
-        args['DATA_PATH'], int(args['--words']), int(args['--sent-length']), bool(args['--verbose'])
+        args['DATA_PATH'], 
+        int(args['--words']), 
+        int(args['--sent-length']), 
+        bool(args['--verbose'])
     )
     nb_classes = labels.shape[1]
 
