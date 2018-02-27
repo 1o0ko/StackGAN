@@ -21,11 +21,14 @@ Options:
                                  [default: 0.2]
 
     -e, --epochs=<int>           Limit on the number of parsed lines
-                                 [default: 10]
+                                 [default: 20]
     -b, --batch-size=<int>       Size of the batch used for training
                                  [default: 128]
 
     -v, --verbose                Boolean flag setting the amout of logging
+
+    --early-stopping-patience=<int> Wait 'n' epochs before stopping
+                                    [default: 4]
 """
 import os
 import logging
@@ -43,6 +46,7 @@ import tensorflow as tf
 from collections import Counter, namedtuple
 
 from keras import backend as K
+from keras.callbacks import EarlyStopping
 from keras.layers import Conv1D, MaxPooling1D
 from keras.layers import Dense, Flatten, Dropout
 from keras.layers import Embedding
@@ -253,11 +257,17 @@ def main(args):
 
     logger.info('Printing model summary')
     model.summary()
+    callbacks = []
+    callbacks.append(EarlyStopping(
+        monitor='val_loss',
+        verbose=1,
+        patience=int(args['--early-stopping-patience'])))
 
     logger.info('Fit that thing!')
     model.fit(
         x_train, y_train,
         validation_data=(x_val, y_val),
+	callbacks=callbacks,
         epochs=int(args['--epochs']),
         batch_size=int(args['--batch-size']),
         verbose=int(args['--verbose']))
