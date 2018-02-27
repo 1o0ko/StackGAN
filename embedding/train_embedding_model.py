@@ -8,10 +8,12 @@ Arguments:
 
 Options:
     -w, --words=<int>            Maximum number of words in dictionary
-                                 [default: 7000]
+                                 [default: 10000]
     -s, --sent-length=<int>      Maximum number of words in the sentence
-                                 [default: 400]
+                                 [default: 70]
 
+    -m  --min-count=<int>        Minimum class count
+				 [default: 2]
     -d, --dropout=<float>        Dropout rate
                                  [default: 0.2]
 
@@ -47,7 +49,8 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from keras.regularizers import l2
 from keras.utils.np_utils import to_categorical
-from keras.utils.np_utils import to_categorical
+
+from sklearn.model_selection import StratifiedShuffleSplit
 
 from docopt import docopt
 
@@ -84,6 +87,7 @@ def load_and_process(data_path, num_words, maxlen, verbose=False):
             for key, value in classes_stats:
                 logger.info("\t %s: %i" % (key, value))
 
+    
     # Setting up keras tokenzer
     tokenizer = Tokenizer(num_words=num_words)
     tokenizer.fit_on_texts(texts)
@@ -144,26 +148,29 @@ def load_glove_embeddings(embedding_path, word_index,
     return embedding_layer
 
 
-def train_val_split(data, labels, split_ratio, seed=0):
+def train_val_split(data, labels, test_size, min_count=2, seed=0):
     '''
     Splits data and lables into training and validation set
     '''
-    # set seed
-    np.random.seed(seed)
-
-    # shuffle indices
-    indices = np.arange(data.shape[0])
-    np.random.shuffle(indices)
-
-    data = data[indices]
-    labels = labels[indices]
-    nb_validation_samples = int(split_ratio * data.shape[0])
-
-    x_train = data[:-nb_validation_samples]
-    y_train = labels[:-nb_validation_samples]
-
-    x_val = data[-nb_validation_samples:]
-    y_val = labels[-nb_validation_samples:]
+    # we want to filter classes less frequent than 2
+    class_info = np.argmax(labels, axis=1)
+    class_counts = Counter(class_info)
+    labels_, data_ = zip(*[
+        (cls, txt) for cls, txt in zip(labels, data) if class_counts[np.argmax(cls)] >= min_count]
+    )
+    
+    # due to high class impalance whe need to stratify the split
+    labels_    = np.array(labels_)
+    data_      = np.array(data_)
+    class_info = np.argmax(labels_, axis=1)
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=seed)
+    train_idx, test_idx = list(sss.split(class_info, class_info))[0]
+        
+    x_train = data_[train_idx]
+    y_train = labels_[train_idx]
+    
+    x_val = data_[test_idx]
+    y_val = labels_[test_idx]
 
     return x_train, y_train, x_val, y_val
 
@@ -223,7 +230,7 @@ def main(args):
     nb_classes = labels.shape[1]
 
     # make split
-    x_train, y_train, x_val, y_val = train_val_split(data, labels, 0.1)
+    x_train, y_train, x_val, y_val = train_val_split(data, labels, 0.1, int(args['--min-count']))
 
     # Build and train a model
     model = build_model(tokenizer.word_index,
@@ -241,11 +248,11 @@ def main(args):
 
     # evalute model on train data to see how well we're fitting the data
     logger.info("Train data")
-    model.evaluate(x_train, y_train, batch_size=128))
+    model.evaluate(x_train, y_train, batch_size=128)
 
     # evalute model on validation data
     logger.info("Validation data")
-    model.evaluate(x_val, y_val, batch_size=128))
+    model.evaluate(x_val, y_val, batch_size=128)
 
     # all new operations will be in test mode from now on (dropout, etc.)
     K.set_learning_phase(0)
