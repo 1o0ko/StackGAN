@@ -12,10 +12,10 @@ Options:
     -s, --sent-length=<int>      Maximum number of words in the sentence
                                  [default: 70]
 
-    -t  --test-size=<float>      Percentage size of the test data
+    -t, --test-size=<float>      Percentage size of the test data
 				 [default: 0.1]
 
-    -m  --min-count=<int>        Minimum class count
+    -m, --min-count=<int>        Minimum class count
 				 [default: 2]
     -d, --dropout=<float>        Dropout rate
                                  [default: 0.2]
@@ -236,7 +236,7 @@ def main(args):
     x_train, y_train, x_val, y_val = train_val_split(
         data, 
         labels, 
-        float(args['--test-size'), 
+        float(args['--test-size']), 
         int(args['--min-count']))
 
     # Build and train a model
@@ -274,4 +274,6 @@ def main(args):
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='0.1')
+    print(args)
     main(args)
+
