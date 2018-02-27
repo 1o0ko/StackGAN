@@ -12,6 +12,9 @@ Options:
     -s, --sent-length=<int>      Maximum number of words in the sentence
                                  [default: 70]
 
+    -t  --test-size=<float>      Percentage size of the test data
+				 [default: 0.1]
+
     -m  --min-count=<int>        Minimum class count
 				 [default: 2]
     -d, --dropout=<float>        Dropout rate
@@ -230,7 +233,11 @@ def main(args):
     nb_classes = labels.shape[1]
 
     # make split
-    x_train, y_train, x_val, y_val = train_val_split(data, labels, 0.1, int(args['--min-count']))
+    x_train, y_train, x_val, y_val = train_val_split(
+        data, 
+        labels, 
+        float(args['--test-size'), 
+        int(args['--min-count']))
 
     # Build and train a model
     model = build_model(tokenizer.word_index,
