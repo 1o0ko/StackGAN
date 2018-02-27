@@ -60,6 +60,10 @@ from docopt import docopt
 BLACK_LIST = string.punctuation.replace('%', '').replace('-', '') + '\n'
 
 
+def get_categorical_accuracy_keras(y_true, y_pred):
+    return K.mean(K.equal(K.argmax(y_true, axis=1), K.argmax(y_pred, axis=1)))
+
+
 def normalize(text, black_list=BLACK_LIST, vocab=None,lowercase=True, tokenize=False):
     if black_list:
         text = text.translate(None, BLACK_LIST)
@@ -214,7 +218,7 @@ def build_model(word_index, glove_path, max_sent, dropout_rate, nb_classes):
     logger.debug('Compiling the model')
     model.compile(loss='categorical_crossentropy',
                   optimizer=adam,
-                  metrics=['acc'])
+                  metrics=[get_categorical_accuracy_keras])
 
     return model
 
@@ -240,12 +244,17 @@ def main(args):
         int(args['--min-count']))
 
     # Build and train a model
+    logger.info('Building model')
     model = build_model(tokenizer.word_index,
                         args['GLOVE'],
                         int(args['--sent-length']),
                         float(args['--dropout']),
                         nb_classes)
+
+    logger.info('Printing model summary')
     model.summary()
+
+    logger.info('Fit that thing!')
     model.fit(
         x_train, y_train,
         validation_data=(x_val, y_val),
@@ -255,11 +264,11 @@ def main(args):
 
     # evalute model on train data to see how well we're fitting the data
     logger.info("Train data")
-    model.evaluate(x_train, y_train, batch_size=128)
+    logger.info(model.evaluate(x_train, y_train, batch_size=128))
 
     # evalute model on validation data
     logger.info("Validation data")
-    model.evaluate(x_val, y_val, batch_size=128)
+    logger.info(model.evaluate(x_val, y_val, batch_size=128))
 
     # all new operations will be in test mode from now on (dropout, etc.)
     K.set_learning_phase(0)
