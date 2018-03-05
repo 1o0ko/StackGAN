@@ -1,5 +1,6 @@
 import types
 
+
 class DataStore(list):
     '''
     This class is used to register and instantiate datasets

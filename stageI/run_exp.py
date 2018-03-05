@@ -13,12 +13,13 @@ from misc.config import cfg, cfg_from_file
 from misc.registry import datastore
 from misc.utils import mkdir_p
 
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a GAN network')
     parser.add_argument('--cfg', dest='cfg_file',
                         help='optional config file',
                         default=None, type=str)
-    parser.add_argument('--path', dest = 'data_path',
+    parser.add_argument('--path', dest='data_path',
                         default='/data/', type=str)
     parser.add_argument('--gpu', dest='gpu_id',
                         help='GPU device id to use [0]',
@@ -27,6 +28,7 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
 
 if __name__ == "__main__":
     args = parse_args()
@@ -53,7 +55,7 @@ if __name__ == "__main__":
     if cfg.TRAIN.FLAG:
         dataset.train = dataset.get_data('%s/train' % (datadir))
 
-        ckt_logs_dir = "ckt_logs/%s/%s_%s" %  (cfg.DATASET_NAME, cfg.CONFIG_NAME, timestamp)
+        ckt_logs_dir = "ckt_logs/%s/%s_%s" % (cfg.DATASET_NAME, cfg.CONFIG_NAME, timestamp)
         mkdir_p(ckt_logs_dir)
     else:
         s_tmp = cfg.TRAIN.PRETRAINED_MODEL

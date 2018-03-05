@@ -23,6 +23,8 @@ from registry import register, datastore
   self.next_batch(n * n, cfg.TRAIN.NUM_EMBEDDING)
   self._num_examples
 '''
+
+
 class BaseDataset(object):
     def __init__(self, workdir, embedding_filename, hr_lr_ratio):
         self.workdir = workdir
@@ -30,8 +32,8 @@ class BaseDataset(object):
         self.hr_lr_ratio = hr_lr_ratio
 
     def __repr__(self):
-        return "[%s]\nWorkdir: %s\nEmbedding filename: %s\nHR to LR ration: %i" % \
-                (self.__class__.__name__, self.workdir, self.embedding_filename, self.hr_lr_ratio)
+        return "[%s]\nWorkdir: %s\nEmbedding filename: %s\nHR to LR ration: %i" % (
+            self.__class__.__name__, self.workdir, self.embedding_filename, self.hr_lr_ratio)
 
 
 class Dataset(object):
@@ -145,7 +147,6 @@ class Dataset(object):
             sampled_embeddings_array = np.array(sampled_embeddings)
             return np.squeeze(sampled_embeddings_array), sampled_captions
 
-
     def next_batch(self, batch_size, window):
         """Return the next `batch_size` examples from this data set."""
         start = self._index_in_epoch
@@ -241,6 +242,7 @@ class Dataset(object):
         return [sampled_images, sampled_embeddings_batchs,
                 self._saveIDs[start:end], sampled_captions]
 
+
 @register(default=True)
 class TextDataset(BaseDataset):
     def __init__(self, *args, **kwargs):
@@ -284,6 +286,7 @@ class TextDataset(BaseDataset):
                        list_filenames, self.workdir, None,
                        aug_flag, class_id)
 
+
 if __name__ == '__main__':
     import argparse
     import yaml
@@ -291,7 +294,7 @@ if __name__ == '__main__':
     from easydict import EasyDict as edict
 
     parser = argparse.ArgumentParser(description='Test dataset factory')
-    parser.add_argument('--path', dest = 'data_path',
+    parser.add_argument('--path', dest='data_path',
                         default='/data/', type=str)
     parser.add_argument('--cfg', dest='cfg', type=str)
 
