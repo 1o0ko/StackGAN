@@ -158,10 +158,7 @@ def load_glove_embeddings(embedding_path, word_index,
     return embedding_layer
 
 
-def train_val_split(data, labels, test_size, min_count=2, seed=0):
-    '''
-    Splits data and lables into training and validation set
-    '''
+def get_split(data, labels, test_size, min_count=2, seed=0):
     # we want to filter classes less frequent than 2
     class_info = np.argmax(labels, axis=1)
     class_counts = Counter(class_info)
@@ -175,6 +172,16 @@ def train_val_split(data, labels, test_size, min_count=2, seed=0):
     class_info = np.argmax(labels_, axis=1)
     sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=seed)
     train_idx, test_idx = list(sss.split(class_info, class_info))[0]
+
+    return train_idx, test_idx, labels_, data_
+
+
+def train_val_split(data, labels, test_size, min_count=2, seed=0):
+    '''
+    Splits data and lables into training and validation set
+    '''
+    train_idx, test_idx, labels_, data_ = get_split(
+        data, labels, test_size, min_count, seed)
 
     x_train = data_[train_idx]
     y_train = labels_[train_idx]

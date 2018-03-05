@@ -22,18 +22,17 @@ class Model(object):
     Wrapper to embed text using trained model and tokenizer
     '''
 
-    def __init__(self, frozen_graph_filename, tokenizer_path):
+    def __init__(self, frozen_graph_filename, tokenizer_path, maxlen):
         print('Loading the graph')
-        graph = load(frozen_graph_filename)
-        self.X = graph.get_tensor_by_name("%s/%s" % (PREFIX, INPUT_TENSOR_NAME))
-        self.Y = graph.get_tensor_by_name("%s/%s" % (PREFIX, OUTPUT_TENSOR_NAME))
-        self.LF = graph.get_tensor_by_name("%s/%s" % (PREFIX, LEARNING_PAHSE))
+        self.graph = load(frozen_graph_filename)
+        self.X = self.graph.get_tensor_by_name("%s/%s" % (PREFIX, INPUT_TENSOR_NAME))
+        self.Y = self.graph.get_tensor_by_name("%s/%s" % (PREFIX, OUTPUT_TENSOR_NAME))
+        self.LF = self.graph.get_tensor_by_name("%s/%s" % (PREFIX, LEARNING_PAHSE))
 
         self.tokenizer = pickle.load(open(tokenizer_path, 'rb'))
-        self.persistent_sess = tf.Session(graph=graph)
+        self.persistent_sess = tf.Session(graph=self.graph)
 
-        # load the max sentence padding from input tensor shape
-        self.maxlen = self.X.get_shape()[1].value
+        self.maxlen = maxlen
 
     def embed(self, texts):
         ''' use model to find prediction '''
