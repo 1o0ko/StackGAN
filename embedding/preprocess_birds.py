@@ -16,7 +16,7 @@ logging.basicConfig(
 import pickle
 
 from docopt import docopt
-from itertools import chain, islice
+from itertools import chain
 
 from readers import readers
 from utils import load_filenames

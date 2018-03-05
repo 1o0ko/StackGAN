@@ -40,11 +40,10 @@ logging.basicConfig(
 import string
 import pickle
 
-import keras
 import numpy as np
 import tensorflow as tf
 
-from collections import Counter, namedtuple
+from collections import Counter
 
 from keras import backend as K
 from keras.callbacks import EarlyStopping

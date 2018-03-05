@@ -21,9 +21,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',)
 
-import numpy as np
 import pickle
-import tensorflow as tf
 
 from model import Model
 from readers import readers

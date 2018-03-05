@@ -16,8 +16,8 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(message)s',)
 
 import tensorflow as tf
-
 from docopt import docopt
+
 
 PREFIX = 'prefix'
 
@@ -72,7 +72,7 @@ def freeze(model_dir, node_names):
     with tf.Session(graph=tf.Graph()) as sess:
         # We import the meta graph in the current default Graph
         saver = tf.train.import_meta_graph(
-            "%s.meta" % input_checkpoint, clear_devices=True)
+            "%s.meta" % input_checkpoint, clear_devices=clear_devices)
 
         # Restore the weights
         saver.restore(sess, input_checkpoint)
