@@ -8,6 +8,9 @@ Arguments:
     NODE_NAMES  list of nodes to export from graph
 
 Based on: https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc
+
+Example:
+> python embedding/graph.py /models/fashion embedding_1_input embedding/Relu
 """
 import os
 import logging
