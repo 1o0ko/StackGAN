@@ -19,18 +19,18 @@ import tensorflow as tf
 
 from docopt import docopt
 
-PREFIX ='prefix'
+PREFIX = 'prefix'
 
 
 def load(frozen_graph_filename):
     ''' loads serialized tensorflow graph '''
-    # load the protobuf file from the disk and parse it to 
+    # load the protobuf file from the disk and parse it to
     # retrieve the unserialized graph_def
     with tf.gfile.GFile(frozen_graph_filename, "rb") as f:
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
 
-    # Then, we import the graph_def into a new Graph and returns it 
+    # Then, we import the graph_def into a new Graph and returns it
     with tf.Graph().as_default() as graph:
         # The name var will prefix every op/nodes in your graph
         # Since we load everything in a new graph, this is not needed
@@ -80,7 +80,7 @@ def freeze(model_dir, node_names):
         # use built-in TF helper to export variables to constants
         output_graph_def = tf.graph_util.convert_variables_to_constants(
             sess,                                   # session is used to retrieve the weights
-            tf.get_default_graph().as_graph_def(),  # The graph_def is used to retrieve the nodes 
+            tf.get_default_graph().as_graph_def(),  # The graph_def is used to retrieve the nodes
             node_names)                             # The nodes are used to select the subgraphs nodes
 
         # Serialize and dump the output subgraph to the filesystem

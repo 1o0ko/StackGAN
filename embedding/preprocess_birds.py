@@ -21,7 +21,8 @@ from itertools import chain, islice
 from readers import readers
 from utils import load_filenames
 
-PREFIX='__label__'
+PREFIX = '__label__'
+
 
 def zip_and_save(inpath, filenames, outpath, reader):
     logger = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ def preprocess_birds(data_path, reader):
     with open(os.path.join(data_path, 'birds.txt'), 'wt') as f:
         f.writelines(chain(train_lines, test_lines))
 
+
 if __name__ == '__main__':
     args = docopt(__doc__, version='0.1')
-    preprocess_birds(args['BIRDS_DIR'],  readers['birds'])
+    preprocess_birds(args['BIRDS_DIR'], readers['birds'])

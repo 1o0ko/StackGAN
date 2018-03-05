@@ -13,10 +13,10 @@ Options:
                                  [default: 70]
 
     -t, --test-size=<float>      Percentage size of the test data
-				 [default: 0.1]
+                                 [default: 0.1]
 
     -m, --min-count=<int>        Minimum class count
-				 [default: 2]
+                                 [default: 2]
     -d, --dropout=<float>        Dropout rate
                                  [default: 0.2]
 
@@ -30,6 +30,7 @@ Options:
     --early-stopping-patience=<int> Wait 'n' epochs before stopping
                                     [default: 4]
 """
+
 import os
 import logging
 logging.basicConfig(
@@ -68,7 +69,7 @@ def get_categorical_accuracy_keras(y_true, y_pred):
     return K.mean(K.equal(K.argmax(y_true, axis=1), K.argmax(y_pred, axis=1)))
 
 
-def normalize(text, black_list=BLACK_LIST, vocab=None,lowercase=True, tokenize=False):
+def normalize(text, black_list=BLACK_LIST, vocab=None, lowercase=True, tokenize=False):
     if black_list:
         text = text.translate(None, BLACK_LIST)
     if lowercase:
@@ -98,7 +99,6 @@ def load_and_process(data_path, num_words, maxlen, verbose=False):
             for key, value in classes_stats:
                 logger.info("\t %s: %i" % (key, value))
 
-    
     # Setting up keras tokenzer
     tokenizer = Tokenizer(num_words=num_words)
     tokenizer.fit_on_texts(texts)
@@ -169,17 +169,17 @@ def train_val_split(data, labels, test_size, min_count=2, seed=0):
     labels_, data_ = zip(*[
         (cls, txt) for cls, txt in zip(labels, data) if class_counts[np.argmax(cls)] >= min_count]
     )
-    
+
     # due to high class impalance whe need to stratify the split
-    labels_    = np.array(labels_)
-    data_      = np.array(data_)
+    labels_ = np.array(labels_)
+    data_ = np.array(data_)
     class_info = np.argmax(labels_, axis=1)
     sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=seed)
     train_idx, test_idx = list(sss.split(class_info, class_info))[0]
-        
+
     x_train = data_[train_idx]
     y_train = labels_[train_idx]
-    
+
     x_val = data_[test_idx]
     y_val = labels_[test_idx]
 
@@ -233,18 +233,18 @@ def main(args):
 
     # load and process data
     data, labels, tokenizer = load_and_process(
-        args['DATA_PATH'], 
-        int(args['--words']), 
-        int(args['--sent-length']), 
+        args['DATA_PATH'],
+        int(args['--words']),
+        int(args['--sent-length']),
         bool(args['--verbose'])
     )
     nb_classes = labels.shape[1]
 
     # make split
     x_train, y_train, x_val, y_val = train_val_split(
-        data, 
-        labels, 
-        float(args['--test-size']), 
+        data,
+        labels,
+        float(args['--test-size']),
         int(args['--min-count']))
 
     # Build and train a model
@@ -267,7 +267,7 @@ def main(args):
     model.fit(
         x_train, y_train,
         validation_data=(x_val, y_val),
-	callbacks=callbacks,
+        callbacks=callbacks,
         epochs=int(args['--epochs']),
         batch_size=int(args['--batch-size']),
         verbose=int(args['--verbose']))

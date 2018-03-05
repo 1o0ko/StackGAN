@@ -12,16 +12,17 @@ from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 
 from graph import PREFIX, load
-#TODO: put this in configuration file 
-INPUT_TENSOR_NAME='embedding_1_input:0'
-OUTPUT_TENSOR_NAME='embedding/Relu:0'
-LEARNING_PAHSE='dropout_1/keras_learning_phase:0'
+# TODO: put this in configuration file
+INPUT_TENSOR_NAME = 'embedding_1_input:0'
+OUTPUT_TENSOR_NAME = 'embedding/Relu:0'
+LEARNING_PAHSE = 'dropout_1/keras_learning_phase:0'
 
 
 class Model(object):
     '''
     Wrapper to embed text using trained model and tokenizer
     '''
+
     def __init__(self, frozen_graph_filename, tokenizer_path):
         print('Loading the graph')
         graph = load(frozen_graph_filename)
@@ -46,7 +47,7 @@ class Model(object):
         x = np.array(x).reshape(-1, self.maxlen)
         h = self.persistent_sess.run(self.Y, feed_dict={
             self.X: x,
-            self.LF:  False
+            self.LF: False
         })
 
         return h
