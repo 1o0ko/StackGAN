@@ -165,11 +165,11 @@ def main():
 
     print('Saving test data')
     dump_all(classes, filenames, images, texts, test_idx, model,
-            os.path.join(DATA_PATH, 'test'))
+             os.path.join(DATA_PATH, 'test'))
 
     print('Saving train data')
     dump_all(classes, filenames, images, texts, train_idx, model,
-            os.path.join(DATA_PATH, 'train'))
+             os.path.join(DATA_PATH, 'train'))
 
 
 if __name__ == '__main__':

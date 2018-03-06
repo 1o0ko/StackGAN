@@ -241,7 +241,7 @@ def main(args):
     logger.setLevel(logging.DEBUG)
 
     # load data
-    texts, labels   = load_data(
+    texts, labels = load_data(
         args['DATA_PATH'], bool(args['--verbose']))
 
     # process data
@@ -260,7 +260,7 @@ def main(args):
         float(args['--test-size']),
         int(args['--min-count']))
 
-    # Build and train a model
+    # build and train a model
     logger.info('Building model')
     model = build_model(tokenizer.word_index,
                         args['GLOVE'],
