@@ -80,7 +80,7 @@ def normalize(text, black_list=BLACK_LIST, vocab=None, lowercase=True, tokenize=
     return text
 
 
-def load_and_process(data_path, num_words, maxlen, verbose=False):
+def load_data(data_path, verbose=False):
     logger = logging.getLogger(__name__)
     with open(data_path, 'rt') as f:
         classes, texts = zip(*[line.split(" ", 1) for line in f.readlines()])
@@ -90,13 +90,19 @@ def load_and_process(data_path, num_words, maxlen, verbose=False):
         class_to_id = {
             key: index for (index, (key, value)) in enumerate(classes_stats)
         }
-        ids = to_categorical([class_to_id[cls] for cls in classes])
+        labels = to_categorical([class_to_id[cls] for cls in classes])
 
         if verbose:
             logger.info("Class statistics")
             logger.info("Found %i classes" % len(classes_stats))
             for key, value in classes_stats:
                 logger.info("\t %s: %i" % (key, value))
+
+    return texts, labels
+
+
+def process_data(texts, num_words, maxlen):
+    logger = logging.getLogger(__name__)
 
     # Setting up keras tokenzer
     tokenizer = Tokenizer(num_words=num_words)
@@ -113,10 +119,7 @@ def load_and_process(data_path, num_words, maxlen, verbose=False):
         padding='post',
         truncating='post')
 
-    logger.debug('Shape of data tensor: %s', data.shape)
-    logger.debug('Shape of label tensor: %s', ids.shape)
-
-    return data, ids, tokenizer
+    return data, tokenizer
 
 
 def load_glove_embeddings(embedding_path, word_index,
@@ -237,13 +240,17 @@ def main(args):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
-    # load and process data
-    data, labels, tokenizer = load_and_process(
-        args['DATA_PATH'],
-        int(args['--words']),
-        int(args['--sent-length']),
-        bool(args['--verbose'])
-    )
+    # load data
+    texts, labels   = load_data(
+        args['DATA_PATH'], bool(args['--verbose']))
+
+    # process data
+    data, tokenizer = process_data(texts,
+        int(args['--words']), int(args['--sent-length']))
+
+    logger.debug('Shape of data tensor: %s', data.shape)
+    logger.debug('Shape of label tensor: %s', labels.shape)
+
     nb_classes = labels.shape[1]
 
     # make split

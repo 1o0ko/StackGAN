@@ -1,3 +1,7 @@
+"""
+Uses pretrained embedding model to embed descriptions from HDF5 file
+and save the datasource format siutable for StackGAN
+"""
 import json
 import os
 import pickle
@@ -11,20 +15,21 @@ from model import Model
 from train_embedding_model import get_split
 from utils import normalize
 
+# Pipeline properties
 BATH_SIZE = 100
-IMG_SIZE = 256
+LIMIT = 70
 
 # Img resizing stuff
+IMG_SIZE = 256
 LR_HR_RATIO = 4
 BIG_SIZE = int(IMG_SIZE * 76 / 64)
 SMALL_SIZE = int(BIG_SIZE / LR_HR_RATIO)
 
+# Paths
 FASHION_PATH = '/fashion/'
 DATA_PATH = '/data/fashion/'
-DATA_TEMPLATE = os.path.join(FASHION_PATH, 'ssense_%i_%i.h5')
-
 MODEL_PATH = '/models/fashion/'
-LIMIT = 70
+DATA_TEMPLATE = os.path.join(FASHION_PATH, 'ssense_%i_%i.h5')
 
 
 def create_captions(
@@ -159,10 +164,12 @@ def main():
     )
 
     print('Saving test data')
-    dump_all(classes, filenames, images, texts, test_idx, model, '/data/fashion/test')
+    dump_all(classes, filenames, images, texts, test_idx, model,
+            os.path.join(DATA_PATH, 'test'))
 
     print('Saving train data')
-    dump_all(classes, filenames, images, texts, train_idx, model, '/data/fashion/train')
+    dump_all(classes, filenames, images, texts, train_idx, model,
+            os.path.join(DATA_PATH, 'train'))
 
 
 if __name__ == '__main__':
