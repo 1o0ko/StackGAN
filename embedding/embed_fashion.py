@@ -100,11 +100,11 @@ def dump_all(class_info, filenames, images, texts, split, model, outdir):
     print("N. examples: %i, fst: %s" % (len(class_info_), class_info_[0]))
 
     print("Saving class info")
-    with open(os.path.join(outdir, 'class_info.pickle '), 'wb') as f:
+    with open(os.path.join(outdir, 'class_info.pickle'), 'wb') as f:
         pickle.dump(class_info_, f)
 
     print("Saving filenames")
-    with open(os.path.join(outdir, 'filenames.pickle '), 'wb') as f:
+    with open(os.path.join(outdir, 'filenames.pickle'), 'wb') as f:
         pickle.dump(filenames_, f)
 
     print('Creating 76x76 images')
