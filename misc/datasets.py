@@ -251,9 +251,9 @@ class TextDataset(BaseDataset):
         self.lr_imsize = 64
 
         if self.hr_lr_ratio == 1:
-            self.image_filename = '/76images.pickle'
+            self.image_filename = '76images.pickle'
         elif self.hr_lr_ratio == 4:
-            self.image_filename = '/304images.pickle'
+            self.image_filename = '304images.pickle'
 
         self.image_shape = [self.lr_imsize * self.hr_lr_ratio,
                             self.lr_imsize * self.hr_lr_ratio, 3]
@@ -273,13 +273,13 @@ class TextDataset(BaseDataset):
             self.embedding_shape = [embeddings.shape[-1]]
             print('embeddings: ', embeddings.shape)
 
-        filenames_path = os.path.join(pickle_path, '/filenames.pickle')
+        filenames_path = os.path.join(pickle_path, 'filenames.pickle')
         print('filenames path: %s' % filenames_path)
         with open(filenames_path, 'rb') as f:
             list_filenames = pickle.load(f)
             print('list_filenames: ', len(list_filenames), list_filenames[0])
 
-        class_info_path = os.path.join(pickle_path, '/class_info.pickle')
+        class_info_path = os.path.join(pickle_path, 'class_info.pickle')
         print('class_info_path: %s' % class_info_path)
         with open(class_info_path, 'rb') as f:
             class_id = pickle.load(f)
