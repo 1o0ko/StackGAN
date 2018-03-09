@@ -1,7 +1,7 @@
 from __future__ import division
 from __future__ import print_function
 
-
+import os
 import numpy as np
 import pickle
 import random
@@ -263,22 +263,23 @@ class TextDataset(BaseDataset):
         self.test = None
 
     def get_data(self, pickle_path, aug_flag=True):
+        print('Pickle path: %s' % pickle_path)
         with open(pickle_path + self.image_filename, 'rb') as f:
             images = pickle.load(f)
             images = np.array(images)
             print('images: ', images.shape)
 
-        with open(pickle_path + self.embedding_filename, 'rb') as f:
+        with open(os.path.join(pickle_path, self.embedding_filename), 'rb') as f:
             embeddings = pickle.load(f)
             embeddings = np.array(embeddings)
             self.embedding_shape = [embeddings.shape[-1]]
             print('embeddings: ', embeddings.shape)
 
-        with open(pickle_path + '/filenames.pickle', 'rb') as f:
+        with open(os.path.join(pickle_path, '/filenames.pickle'), 'rb') as f:
             list_filenames = pickle.load(f)
             print('list_filenames: ', len(list_filenames), list_filenames[0])
 
-        with open(pickle_path + '/class_info.pickle', 'rb') as f:
+        with open(os.path.join(pickle_path, '/class_info.pickle'), 'rb') as f:
             class_id = pickle.load(f)
             print('class_id: ', len(class_id), class_id[0])
 
@@ -292,10 +293,8 @@ if __name__ == '__main__':
     import yaml
 
     from easydict import EasyDict as edict
-
     parser = argparse.ArgumentParser(description='Test dataset factory')
-    parser.add_argument('--path', dest='data_path',
-                        default='/data/', type=str)
+    parser.add_argument('--path', dest='data_path', default='/data/', type=str)
     parser.add_argument('--cfg', dest='cfg', type=str)
 
     args = parser.parse_args()
