@@ -264,24 +264,33 @@ class TextDataset(BaseDataset):
 
     def get_data(self, pickle_path, aug_flag=True):
         print('Pickle path: %s' % pickle_path)
-        with open(pickle_path + self.image_filename, 'rb') as f:
-            images = pickle.load(f)
-            images = np.array(images)
-            print('images: ', images.shape)
 
-        with open(os.path.join(pickle_path, self.embedding_filename), 'rb') as f:
+        embeddings_path = os.path.join(pickle_path, self.embedding_filename)
+        print('Embeddings path: %s' % embeddings_path)
+        with open(embeddings_path, 'rb') as f:
             embeddings = pickle.load(f)
             embeddings = np.array(embeddings)
             self.embedding_shape = [embeddings.shape[-1]]
             print('embeddings: ', embeddings.shape)
 
-        with open(os.path.join(pickle_path, '/filenames.pickle'), 'rb') as f:
+        filenames_path = os.path.join(pickle_path, '/filenames.pickle')
+        print('filenames path: %s' % filenames_path)
+        with open(filenames_path, 'rb') as f:
             list_filenames = pickle.load(f)
             print('list_filenames: ', len(list_filenames), list_filenames[0])
 
-        with open(os.path.join(pickle_path, '/class_info.pickle'), 'rb') as f:
+        class_info_path = os.path.join(pickle_path, '/class_info.pickle')
+        print('class_info_path: %s' % class_info_path)
+        with open(class_info_path, 'rb') as f:
             class_id = pickle.load(f)
             print('class_id: ', len(class_id), class_id[0])
+
+        images_path = os.path.join(pickle_path, self.image_filename)
+        print('images path: %s' % images_path)
+        with open(images_path, 'rb') as f:
+            images = pickle.load(f)
+            images = np.array(images)
+            print('images: ', images.shape)
 
         return Dataset(images, self.image_shape[0], embeddings,
                        list_filenames, self.workdir, None,
