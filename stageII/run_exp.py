@@ -21,7 +21,7 @@ def parse_args():
                         help='optional config file',
                         default=None, type=str)
     parser.add_argument('--path', dest='data_path',
-                        default='/data/', type=str)
+                        default='/data', type=str)
     parser.add_argument('--gpu', dest='gpu_id',
                         help='GPU device id to use [0]',
                         default=-1, type=int)
