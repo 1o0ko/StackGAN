@@ -56,7 +56,7 @@ def sample_encoded_context(embeddings, model, bAugmentation=True):
     return c
 
 
-def build_model(sess, embedding_dim, batch_size):
+def build_model(sess, embedding_dim, batch_size, cfg):
     '''
     Builds model
     '''
@@ -117,13 +117,15 @@ def drawCaption(img, caption):
 
 def save_super_images(sample_batchs, hr_sample_batchs,
                       captions_batch, batch_size,
-                      startID, save_dir):
-    if not os.path.isdir(save_dir):
+                      startID, save_dir=None):
+
+    if save_dir and not os.path.isdir(save_dir):
         print('Make a new folder: ', save_dir)
         mkdir_p(save_dir)
 
     # Save up to 16 samples for each text embedding/sentence
     img_shape = hr_sample_batchs[0][0].shape
+    super_images = []
     for j in range(batch_size):
         if not re.search('[a-zA-Z]+', captions_batch[j]):
             continue
@@ -171,7 +173,11 @@ def save_super_images(sample_batchs, hr_sample_batchs,
 
         fullpath = '%s/sentence%d.jpg' % (save_dir, startID + j)
         superimage = drawCaption(np.uint8(superimage), captions_batch[j])
-        scipy.misc.imsave(fullpath, superimage)
+        if save_dir:
+            scipy.misc.imsave(fullpath, superimage)
+        super_images.append(superimage)
+
+    return super_images
 
 
 def embed_text(texts_path, model_path):
@@ -196,8 +202,43 @@ def embed_text(texts_path, model_path):
     return embeddings, num_embeddings, captions_list
 
 
+class GenerativeModel(object):
+    def __init__(self, cfg, batch_size, embedding_dim):
+        config = tf.ConfigProto(allow_soft_placement=True)
+        self.persistent_sess = tf.Session(config=config)
+        self.batch_size = batch_size
+        with tf.device("/gpu:%d" % cfg.GPU_ID):
+            self.embeddings_holder, self.fake_images_opt, self.hr_fake_images_opt =\
+                build_model(self.persistent_sess, embedding_dim, self.batch_size, cfg)
+
+    def generate(self, embeddings, captions, n=8):
+            samples_batchs = []
+            hr_samples_batchs = []
+
+            for i in range(np.minimum(16, n)):
+                hr_samples, samples =\
+                    self.persistent_sess.run(
+                        [self.hr_fake_images_opt, self.fake_images_opt],
+                        feed_dict={
+                            self.embeddings_holder: embeddings
+                        })
+
+                samples_batchs.append(samples)
+                hr_samples_batchs.append(hr_samples)
+
+            super_images = save_super_images(
+                samples_batchs,
+                hr_samples_batchs,
+                captions,
+                self.batch_size,
+                startID=0, save_dir=None)
+
+            return super_images
+
+
 if __name__ == "__main__":
     args = parse_args()
+
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
     if args.gpu_id != -1:
@@ -220,7 +261,7 @@ if __name__ == "__main__":
         with tf.Session(config=config) as sess:
             with tf.device("/gpu:%d" % cfg.GPU_ID):
                 embeddings_holder, fake_images_opt, hr_fake_images_opt =\
-                    build_model(sess, embeddings.shape[-1], batch_size)
+                    build_model(sess, embeddings.shape[-1], batch_size, cfg)
 
                 count = 0
                 while count < num_embeddings:
@@ -241,11 +282,11 @@ if __name__ == "__main__":
                                      {embeddings_holder: embeddings_batch})
                         samples_batchs.append(samples)
                         hr_samples_batchs.append(hr_samples)
-                    save_super_images(samples_batchs,
-                                      hr_samples_batchs,
-                                      captions_batch,
-                                      batch_size,
-                                      count, save_dir)
+                        save_super_images(samples_batchs,
+                                          hr_samples_batchs,
+                                          captions_batch,
+                                          batch_size,
+                                          count, save_dir)
                     count += batch_size
 
         print('Finish generating samples for %d sentences:' % num_embeddings)
