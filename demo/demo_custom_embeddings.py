@@ -85,7 +85,7 @@ def build_model(sess, embedding_dim, batch_size):
         saver = tf.train.Saver(tf.all_variables())
         saver.restore(sess, ckt_path)
     else:
-        print("Input a valid model path.")
+        print("Input a valid model path. %s is not valid" % ckt_path)
     return embeddings, fake_images, hr_fake_images
 
 
@@ -175,7 +175,7 @@ def save_super_images(sample_batchs, hr_sample_batchs,
 
 
 def embed_text(texts_path, model_path):
-    print('Loading textsts')
+    print('Loading texts')
     with open(texts_path, 'rt') as f:
         texts = f.readlines()
 

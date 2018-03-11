@@ -8,7 +8,7 @@ HR_LR_RATIO: 4
 
 TRAIN:
     FLAG: True
-    PRETRAINED_MODEL: './ckt_logs/fashion/stageI_2018_03_08_00_07_00/model_92000.ckpt'
+    PRETRAINED_MODEL: './ckt_logs/fashion/stageI/model_92000.ckpt'
     PRETRAINED_EPOCH: 100
     BATCH_SIZE: 64
     NUM_COPY: 4
