@@ -14,6 +14,7 @@ from graph import PREFIX, load
 INPUT_TENSOR_NAME = 'embedding_1_input:0'
 OUTPUT_TENSOR_NAME = 'embedding/Relu:0'
 LEARNING_PAHSE = 'dropout_1/keras_learning_phase:0'
+MAX_LEN = 70
 
 # TODO: add pipeline class that is serializable and shared between Model class
 #       and `train_embedding_model.script`
@@ -24,7 +25,8 @@ class Model(object):
     Wrapper to embed text using trained model and tokenizer
     '''
 
-    def __init__(self, frozen_graph_filename, tokenizer_path, maxlen,
+    def __init__(self, frozen_graph_filename, tokenizer_path,
+                 maxlen=MAX_LEN,
                  input_tensor_name=INPUT_TENSOR_NAME,
                  output_tensor_name=OUTPUT_TENSOR_NAME,
                  learning_phase=LEARNING_PAHSE):

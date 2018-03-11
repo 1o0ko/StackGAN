@@ -63,21 +63,11 @@ from docopt import docopt
 
 BLACK_LIST = string.punctuation.replace('%', '').replace('-', '') + '\n'
 
+from preprocessing import normalize
+
 
 def get_categorical_accuracy_keras(y_true, y_pred):
     return K.mean(K.equal(K.argmax(y_true, axis=1), K.argmax(y_pred, axis=1)))
-
-
-def normalize(text, black_list=BLACK_LIST, vocab=None, lowercase=True, tokenize=False):
-    if black_list:
-        text = text.translate(None, BLACK_LIST)
-    if lowercase:
-        text = text.lower()
-    if vocab:
-        text = ' '.join([word for word in text.split() if word in vocab])
-    if tokenize:
-        return text.split()
-    return text
 
 
 def load_data(data_path, verbose=False):
@@ -245,7 +235,8 @@ def main(args):
         args['DATA_PATH'], bool(args['--verbose']))
 
     # process data
-    data, tokenizer = process_data(texts,
+    data, tokenizer = process_data(
+        texts,
         int(args['--words']), int(args['--sent-length']))
 
     logger.debug('Shape of data tensor: %s', data.shape)

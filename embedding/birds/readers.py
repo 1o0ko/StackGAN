@@ -1,7 +1,6 @@
 '''
 Birds, flowers and fashion will have different readers.
 '''
-
 import logging
 import os
 

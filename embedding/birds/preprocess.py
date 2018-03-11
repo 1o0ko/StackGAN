@@ -19,7 +19,7 @@ from docopt import docopt
 from itertools import chain
 
 from readers import readers
-from utils import load_filenames
+from ..utils import load_filenames
 
 PREFIX = '__label__'
 

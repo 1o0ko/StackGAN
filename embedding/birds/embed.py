@@ -23,7 +23,7 @@ logging.basicConfig(
 
 import pickle
 
-from model import Model
+from ..model import Model
 from readers import readers
 from utils import load_filenames
 

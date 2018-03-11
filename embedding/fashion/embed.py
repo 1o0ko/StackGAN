@@ -13,7 +13,7 @@ from scipy.misc import imresize
 
 from model import Model
 from train_embedding_model import get_split
-from utils import normalize
+from preprocessing import normalize
 
 # Pipeline properties
 BATH_SIZE = 100

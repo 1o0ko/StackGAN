@@ -14,7 +14,9 @@ import re
 from misc.config import cfg, cfg_from_file
 from misc.utils import mkdir_p
 from stageII.model import CondGAN
+
 from embedding.model import Model
+from embedding.preprocessing import normalize
 
 
 def parse_args():
@@ -25,8 +27,15 @@ def parse_args():
     parser.add_argument('--gpu', dest='gpu_id',
                         help='GPU device id to use [0]',
                         default=-1, type=int)
-    parser.add_argument('--embedding_model', type=str, default=None,
+
+    parser.add_argument('--caption_path', type=str, default=None,
                         help='Path to the file with text sentences')
+
+    parser.add_argument('--caption_model', type=str, default=None,
+                        help='Path to the file with embedding model')
+
+    parser.add_argument('--save_dir', type=str, default=None,
+                        help='Path to output saved images')
     args = parser.parse_args()
     return args
 
@@ -48,13 +57,19 @@ def sample_encoded_context(embeddings, model, bAugmentation=True):
 
 
 def build_model(sess, embedding_dim, batch_size):
+    '''
+    Builds model
+    '''
+
+    hr_lr_ratio = int(cfg.TEST.HR_IMSIZE / cfg.TEST.LR_IMSIZE)
     model = CondGAN(
         lr_imsize=cfg.TEST.LR_IMSIZE,
-        hr_lr_ratio=int(cfg.TEST.HR_IMSIZE/cfg.TEST.LR_IMSIZE))
+        hr_lr_ratio=hr_lr_ratio)
 
     embeddings = tf.placeholder(
         tf.float32, [batch_size, embedding_dim],
         name='conditional_embeddings')
+
     with pt.defaults_scope(phase=pt.Phase.test):
         with tf.variable_scope("g_net"):
             c = sample_encoded_context(embeddings, model)
@@ -159,29 +174,44 @@ def save_super_images(sample_batchs, hr_sample_batchs,
         scipy.misc.imsave(fullpath, superimage)
 
 
+def embed_text(texts_path, model_path):
+    print('Loading textsts')
+    with open(texts_path, 'rt') as f:
+        texts = f.readlines()
+
+    print('Loading embedding model')
+    model = Model(
+        os.path.join(model_path, 'frozen_model.pb'),
+        os.path.join(model_path, 'tokenizer.pickle')
+    )
+
+    captions_list = [normalize(text) for text in texts]
+    embeddings = model.embed(captions_list)
+
+    num_embeddings = len(captions_list)
+    print('Successfully load sentences from: ', texts_path)
+    print('Total number of sentences:', num_embeddings)
+    print('num_embeddings:', num_embeddings, embeddings.shape)
+
+    return embeddings, num_embeddings, captions_list
+
+
 if __name__ == "__main__":
     args = parse_args()
     if args.cfg_file is not None:
         cfg_from_file(args.cfg_file)
-
     if args.gpu_id != -1:
         cfg.GPU_ID = args.gpu_id
-
     if args.caption_path is not None:
         cfg.TEST.CAPTION_PATH = args.caption_path
 
-    # Load text embeddings generated from the encoder
-    cap_path = cfg.TEST.CAPTION_PATH
-    t_file = torchfile.load(cap_path)
-    captions_list = t_file.raw_txt
-    embeddings = np.concatenate(t_file.fea_txt, axis=0)
-    num_embeddings = len(captions_list)
-    print('Successfully load sentences from: ', cap_path)
-    print('Total number of sentences:', num_embeddings)
-    print('num_embeddings:', num_embeddings, embeddings.shape)
+    # generate embeddings
+    embeddings, num_embeddings, captions_list = embed_text(
+        args.caption_path,
+        args.caption_model)
 
     # path to save generated samples
-    save_dir = cap_path[:cap_path.find('.t7')]
+    save_dir = args.save_dir if args.save_dir else os.path.dirname(args.caption_path)
     if num_embeddings > 0:
         batch_size = np.minimum(num_embeddings, cfg.TEST.BATCH_SIZE)
 
