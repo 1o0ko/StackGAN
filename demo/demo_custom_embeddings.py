@@ -96,21 +96,20 @@ def drawCaption(img, caption):
     # get a drawing context
     d = ImageDraw.Draw(img_txt)
 
-    # draw text, half opacity
-    d.text((10, 256), 'Stage-I', font=fnt, fill=(255, 255, 255, 255))
-    d.text((10, 512), 'Stage-II', font=fnt, fill=(255, 255, 255, 255))
+    d.text((10, 256), 'Stage-I', font=fnt, fill=(0, 0, 0, 255))
+    d.text((10, 512), 'Stage-II', font=fnt, fill=(0, 0, 0, 255))
     if img.shape[0] > 832:
-        d.text((10, 832), 'Stage-I', font=fnt, fill=(255, 255, 255, 255))
-        d.text((10, 1088), 'Stage-II', font=fnt, fill=(255, 255, 255, 255))
+        d.text((10, 832), 'Stage-I', font=fnt, fill=(0, 0, 0, 255))
+        d.text((10, 1088), 'Stage-II', font=fnt, fill=(0, 0, 0, 255))
 
     idx = caption.find(' ', 60)
     if idx == -1:
-        d.text((256, 10), caption, font=fnt, fill=(255, 255, 255, 255))
+        d.text((256, 10), caption, font=fnt, fill=(0, 0, 0, 255))
     else:
         cap1 = caption[:idx]
-        cap2 = caption[idx+1:]
-        d.text((256, 10), cap1, font=fnt, fill=(255, 255, 255, 255))
-        d.text((256, 60), cap2, font=fnt, fill=(255, 255, 255, 255))
+        cap2 = caption[idx + 1:]
+        d.text((256, 10), cap1, font=fnt, fill=(0, 0, 0, 255))
+        d.text((256, 60), cap2, font=fnt, fill=(0, 0, 0, 255))
 
     return img_txt
 
@@ -130,7 +129,7 @@ def save_super_images(sample_batchs, hr_sample_batchs,
         if not re.search('[a-zA-Z]+', captions_batch[j]):
             continue
 
-        padding = np.zeros(img_shape)
+        padding = 255 + np.zeros(img_shape)
         row1 = [padding]
         row2 = [padding]
         # First row with up to 8 samples
@@ -167,7 +166,7 @@ def save_super_images(sample_batchs, hr_sample_batchs,
             superimage =\
                 np.concatenate([superimage, mid_padding, superimage2], axis=0)
 
-        top_padding = np.zeros((128, superimage.shape[1], 3))
+        top_padding = 255 + np.zeros((128, superimage.shape[1], 3))
         superimage =\
             np.concatenate([top_padding, superimage], axis=0)
 
