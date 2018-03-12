@@ -1,16 +1,13 @@
-import numpy as np
-
 import cStringIO as StringIO
 from skimage.io import imsave
 
 from flask import Flask, render_template, request
 from flask import send_file
 
-
-from misc.config import cfg, cfg_from_file
+from demo.demo_embeddings_tf import parse_args, save_super_images, GenerativeModel
 from embedding.model import Model
 from embedding.preprocessing import normalize
-from demo.demo_embeddings_tf import parse_args, save_super_images, GenerativeModel
+from misc.config import cfg, cfg_from_file
 
 app = Flask(__name__)
 

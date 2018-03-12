@@ -51,7 +51,7 @@ def sample_encoded_context(embeddings, model, bAugmentation=True):
 def build_model(sess, embedding_dim, batch_size):
     model = CondGAN(
         lr_imsize=cfg.TEST.LR_IMSIZE,
-        hr_lr_ratio=int(cfg.TEST.HR_IMSIZE/cfg.TEST.LR_IMSIZE))
+        hr_lr_ratio=int(cfg.TEST.HR_IMSIZE / cfg.TEST.LR_IMSIZE))
 
     embeddings = tf.placeholder(
         tf.float32, [batch_size, embedding_dim],
@@ -93,7 +93,7 @@ def drawCaption(img, caption):
     if idx == -1:
         d.text((256, 10), caption, font=fnt, fill=(255, 255, 255, 255))
     else:
-        cap1 = caption[:idx]
+        cap1= caption[: idx]
         cap2 = caption[idx+1:]
         d.text((256, 10), cap1, font=fnt, fill=(255, 255, 255, 255))
         d.text((256, 60), cap2, font=fnt, fill=(255, 255, 255, 255))
@@ -109,47 +109,47 @@ def save_super_images(sample_batchs, hr_sample_batchs,
         mkdir_p(save_dir)
 
     # Save up to 16 samples for each text embedding/sentence
-    img_shape = hr_sample_batchs[0][0].shape
+    img_shape=hr_sample_batchs[0][0].shape
     for j in range(batch_size):
-        padding = np.zeros(img_shape)
-        row1 = [padding]
-        row2 = [padding]
+        padding=np.zeros(img_shape)
+        row1=[padding]
+        row2=[padding]
         # First row with up to 8 samples
         for i in range(np.minimum(8, len(sample_batchs))):
-            lr_img = sample_batchs[i][j]
-            hr_img = hr_sample_batchs[i][j]
-            hr_img = (hr_img + 1.0) * 127.5
-            re_sample = scipy.misc.imresize(lr_img, hr_img.shape[:2])
+            lr_img=sample_batchs[i][j]
+            hr_img=hr_sample_batchs[i][j]
+            hr_img=(hr_img + 1.0) * 127.5
+            re_sample=scipy.misc.imresize(lr_img, hr_img.shape[:2])
             row1.append(re_sample)
             row2.append(hr_img)
-        row1 = np.concatenate(row1, axis=1)
-        row2 = np.concatenate(row2, axis=1)
-        superimage = np.concatenate([row1, row2], axis=0)
+        row1=np.concatenate(row1, axis = 1)
+        row2=np.concatenate(row2, axis = 1)
+        superimage=np.concatenate([row1, row2], axis = 0)
 
         # Second 8 samples with up to 8 samples
         if len(sample_batchs) > 8:
-            row1 = [padding]
-            row2 = [padding]
+            row1=[padding]
+            row2=[padding]
             for i in range(8, len(sample_batchs)):
-                lr_img = sample_batchs[i][j]
-                hr_img = hr_sample_batchs[i][j]
-                hr_img = (hr_img + 1.0) * 127.5
-                re_sample = scipy.misc.imresize(lr_img, hr_img.shape[:2])
+                lr_img=sample_batchs[i][j]
+                hr_img=hr_sample_batchs[i][j]
+                hr_img=(hr_img + 1.0) * 127.5
+                re_sample=scipy.misc.imresize(lr_img, hr_img.shape[:2])
                 row1.append(re_sample)
                 row2.append(hr_img)
-            row1 = np.concatenate(row1, axis=1)
-            row2 = np.concatenate(row2, axis=1)
-            super_row = np.concatenate([row1, row2], axis=0)
-            superimage2 = np.zeros_like(superimage)
+            row1=np.concatenate(row1, axis = 1)
+            row2=np.concatenate(row2, axis = 1)
+            super_row=np.concatenate([row1, row2], axis = 0)
+            superimage2=np.zeros_like(superimage)
             superimage2[:super_row.shape[0],
-                        :super_row.shape[1],
-                        :super_row.shape[2]] = super_row
+                        : super_row.shape[1],
+                        : super_row.shape[2]]= super_row
             mid_padding = np.zeros((64, superimage.shape[1], 3))
-            superimage =\
+            superimage=
                 np.concatenate([superimage, mid_padding, superimage2], axis=0)
 
         top_padding = np.zeros((128, superimage.shape[1], 3))
-        superimage =\
+        superimage=
             np.concatenate([top_padding, superimage], axis=0)
 
         fullpath = '%s/sentence%d.jpg' % (save_dir, startID + j)
@@ -173,7 +173,7 @@ if __name__ == "__main__":
     print('Successfully load sentences from: ', cap_path)
     print('Total number of sentences:', len(captions_list))
     # path to save generated samples
-    save_dir = cap_path[:cap_path.find('.txt')] + '-skip-thought'
+    save_dir= cap_path[: cap_path.find('.txt')] + '-skip-thought'
 
     if len(captions_list) > 0:
         # Load skipthoughts model and generate embeddings from text sentences
@@ -188,8 +188,7 @@ if __name__ == "__main__":
         config = tf.ConfigProto(allow_soft_placement=True)
         with tf.Session(config=config) as sess:
             with tf.device("/gpu:%d" % cfg.GPU_ID):
-                embeddings_holder, fake_images_opt, hr_fake_images_opt =\
-                    build_model(sess, embeddings.shape[-1], batch_size)
+                embeddings_holder, fake_images_opt, hr_fake_images_opt = build_model(sess, embeddings.shape[-1], batch_size)
 
                 count = 0
                 while count < num_embeddings:
@@ -197,16 +196,15 @@ if __name__ == "__main__":
                     if iend > num_embeddings:
                         iend = num_embeddings
                         count = num_embeddings - batch_size
-                    embeddings_batch = embeddings[count:iend]
-                    captions_batch = captions_list[count:iend]
+                    embeddings_batch= embeddings[count: iend]
+                    captions_batch= captions_list[count: iend]
 
                     samples_batchs = []
                     hr_samples_batchs = []
                     # Generate up to 16 images for each sentence with
                     # randomness from noise z and conditioning augmentation.
                     for i in range(np.minimum(16, cfg.TEST.NUM_COPY)):
-                        hr_samples, samples =\
-                            sess.run([hr_fake_images_opt, fake_images_opt],
+                        hr_samples, samples= sess.run([hr_fake_images_opt, fake_images_opt],
                                      {embeddings_holder: embeddings_batch})
                         samples_batchs.append(samples)
                         hr_samples_batchs.append(hr_samples)

@@ -261,7 +261,8 @@ if __name__ == "__main__":
     # create model
     model = GenerativeModel(cfg, batch_size, embeddings.shape[-1])
     # path to save generated samples
-    save_dir = args.save_dir if args.save_dir else os.path.dirname(args.caption_path)
+    save_dir = args.save_dir if args.save_dir else os.path.dirname(
+        args.caption_path)
 
     # Build StackGAN and load the model
 
