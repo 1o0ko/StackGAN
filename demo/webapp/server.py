@@ -53,8 +53,8 @@ if __name__ == "__main__":
         cfg.GPU_ID = args.gpu_id
 
     text_model = Model(
-        '/models/fashion/frozen_model.pb',
-        '/models/fashion/tokenizer.pickle')
+        '/models/fashion/embedding_model/frozen_model.pb',
+        '/models/fashion/embedding_model/tokenizer.pickle')
 
     img_model = GenerativeModel(cfg, 1, 1024)
 
