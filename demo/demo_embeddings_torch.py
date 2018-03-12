@@ -50,7 +50,7 @@ def sample_encoded_context(embeddings, model, bAugmentation=True):
 def build_model(sess, embedding_dim, batch_size):
     model = CondGAN(
         lr_imsize=cfg.TEST.LR_IMSIZE,
-        hr_lr_ratio=int(cfg.TEST.HR_IMSIZE/cfg.TEST.LR_IMSIZE))
+        hr_lr_ratio=int(cfg.TEST.HR_IMSIZE / cfg.TEST.LR_IMSIZE))
 
     embeddings = tf.placeholder(
         tf.float32, [batch_size, embedding_dim],
@@ -93,7 +93,7 @@ def drawCaption(img, caption):
         d.text((256, 10), caption, font=fnt, fill=(255, 255, 255, 255))
     else:
         cap1 = caption[:idx]
-        cap2 = caption[idx+1:]
+        cap2 = caption[idx + 1:]
         d.text((256, 10), cap1, font=fnt, fill=(255, 255, 255, 255))
         d.text((256, 60), cap2, font=fnt, fill=(255, 255, 255, 255))
 

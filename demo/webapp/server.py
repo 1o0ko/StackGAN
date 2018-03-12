@@ -10,7 +10,7 @@ from flask import send_file
 from misc.config import cfg, cfg_from_file
 from embedding.model import Model
 from embedding.preprocessing import normalize
-from demo.demo_custom_embeddings import parse_args, GenerativeModel 
+from demo.demo_embeddings_tf import parse_args, GenerativeModel
 
 app = Flask(__name__)
 

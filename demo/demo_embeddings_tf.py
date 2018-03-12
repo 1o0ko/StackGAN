@@ -7,7 +7,6 @@ import numpy as np
 import scipy.misc
 import os
 import argparse
-import torchfile
 from PIL import Image, ImageDraw, ImageFont
 import re
 
