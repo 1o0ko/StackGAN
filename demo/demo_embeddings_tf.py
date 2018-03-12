@@ -113,8 +113,8 @@ def drawCaption(img, caption):
     return img_txt
 
 
-def save_super_images(sample_batchs, hr_sample_batchs,
-                      captions_batch, batch_size,
+def save_super_images(lr_sample_batchs, hr_sample_batchs,
+                      texts_batch, batch_size,
                       startID, save_dir=None):
 
     if save_dir and not os.path.isdir(save_dir):
@@ -125,15 +125,15 @@ def save_super_images(sample_batchs, hr_sample_batchs,
     img_shape = hr_sample_batchs[0][0].shape
     super_images = []
     for j in range(batch_size):
-        if not re.search('[a-zA-Z]+', captions_batch[j]):
+        if not re.search('[a-zA-Z]+', texts_batch[j]):
             continue
 
         padding = 255 + np.zeros(img_shape)
         row1 = [padding]
         row2 = [padding]
         # First row with up to 8 samples
-        for i in range(np.minimum(8, len(sample_batchs))):
-            lr_img = sample_batchs[i][j]
+        for i in range(np.minimum(8, len(lr_sample_batchs))):
+            lr_img = lr_sample_batchs[i][j]
             hr_img = hr_sample_batchs[i][j]
             hr_img = (hr_img + 1.0) * 127.5
             re_sample = scipy.misc.imresize(lr_img, hr_img.shape[:2])
@@ -144,11 +144,11 @@ def save_super_images(sample_batchs, hr_sample_batchs,
         superimage = np.concatenate([row1, row2], axis=0)
 
         # Second 8 samples with up to 8 samples
-        if len(sample_batchs) > 8:
+        if len(lr_sample_batchs) > 8:
             row1 = [padding]
             row2 = [padding]
-            for i in range(8, len(sample_batchs)):
-                lr_img = sample_batchs[i][j]
+            for i in range(8, len(lr_sample_batchs)):
+                lr_img = lr_sample_batchs[i][j]
                 hr_img = hr_sample_batchs[i][j]
                 hr_img = (hr_img + 1.0) * 127.5
                 re_sample = scipy.misc.imresize(lr_img, hr_img.shape[:2])
@@ -170,7 +170,7 @@ def save_super_images(sample_batchs, hr_sample_batchs,
             np.concatenate([top_padding, superimage], axis=0)
 
         fullpath = '%s/sentence%d.jpg' % (save_dir, startID + j)
-        superimage = drawCaption(np.uint8(superimage), captions_batch[j])
+        superimage = drawCaption(np.uint8(superimage), texts_batch[j])
         if save_dir:
             scipy.misc.imsave(fullpath, superimage)
         super_images.append(superimage)
@@ -189,15 +189,15 @@ def embed_text(texts_path, model_path):
         os.path.join(model_path, 'tokenizer.pickle')
     )
 
-    captions_list = [normalize(text) for text in texts]
-    embeddings = model.embed(captions_list)
+    normalized_texts = [normalize(text) for text in texts]
+    embeddings = model.embed(normalized_texts)
 
-    num_embeddings = len(captions_list)
+    num_embeddings = len(normalized_texts)
     print('Successfully load sentences from: ', texts_path)
     print('Total number of sentences:', num_embeddings)
     print('num_embeddings:', num_embeddings, embeddings.shape)
 
-    return embeddings, num_embeddings, captions_list
+    return embeddings, num_embeddings, normalized_texts
 
 
 class GenerativeModel(object):
@@ -209,29 +209,29 @@ class GenerativeModel(object):
             self.embeddings_holder, self.fake_images_opt, self.hr_fake_images_opt =\
                 build_model(self.persistent_sess, embedding_dim, self.batch_size, cfg)
 
-    def generate(self, embeddings, captions, n=8):
-            samples_batchs = []
-            hr_samples_batchs = []
+    def __del__(self):
+        self.persistent_sess.close()
 
-            for i in range(np.minimum(16, n)):
-                hr_samples, samples =\
-                    self.persistent_sess.run(
-                        [self.hr_fake_images_opt, self.fake_images_opt],
-                        feed_dict={
-                            self.embeddings_holder: embeddings
-                        })
+    def generate(self, embeddings):
+        hr_samples, lr_samples =\
+            self.persistent_sess.run(
+                [self.hr_fake_images_opt, self.fake_images_opt],
+                feed_dict={
+                    self.embeddings_holder: embeddings
+                })
 
-                samples_batchs.append(samples)
-                hr_samples_batchs.append(hr_samples)
+        return hr_samples, lr_samples
 
-            super_images = save_super_images(
-                samples_batchs,
-                hr_samples_batchs,
-                captions,
-                self.batch_size,
-                startID=0, save_dir=None)
+    def generate_n(self, embeddings, n=8):
+        lr_samples_batchs = []
+        hr_samples_batchs = []
 
-            return super_images
+        for i in range(np.minimum(16, n)):
+            hr_samples, samples = self.generate(embeddings)
+            lr_samples_batchs.append(samples)
+            hr_samples_batchs.append(hr_samples)
+
+        return hr_samples_batchs, lr_samples_batchs
 
 
 if __name__ == "__main__":
@@ -245,49 +245,45 @@ if __name__ == "__main__":
         cfg.TEST.CAPTION_PATH = args.caption_path
 
     # generate embeddings
-    embeddings, num_embeddings, captions_list = embed_text(
+    embeddings, num_embeddings, normalized_texts = embed_text(
         args.caption_path,
         args.caption_model)
 
+    if num_embeddings <= 0:
+        raise ValueError('At least one embedding required')
+
+    # set batchs size 
+    batch_size = np.minimum(num_embeddings, cfg.TEST.BATCH_SIZE)
+
+    # create model
+    model = GenerativeModel(cfg, batch_size, embeddings.shape[-1])
     # path to save generated samples
     save_dir = args.save_dir if args.save_dir else os.path.dirname(args.caption_path)
-    if num_embeddings > 0:
-        batch_size = np.minimum(num_embeddings, cfg.TEST.BATCH_SIZE)
 
-        # Build StackGAN and load the model
-        config = tf.ConfigProto(allow_soft_placement=True)
-        with tf.Session(config=config) as sess:
-            with tf.device("/gpu:%d" % cfg.GPU_ID):
-                embeddings_holder, fake_images_opt, hr_fake_images_opt =\
-                    build_model(sess, embeddings.shape[-1], batch_size, cfg)
+    # Build StackGAN and load the model
 
-                count = 0
-                while count < num_embeddings:
-                    iend = count + batch_size
-                    if iend > num_embeddings:
-                        iend = num_embeddings
-                        count = num_embeddings - batch_size
-                    embeddings_batch = embeddings[count:iend]
-                    captions_batch = captions_list[count:iend]
+    count = 0
+    while count < num_embeddings:
+        # generate batches
+        iend = count + batch_size
+        if iend > num_embeddings:
+            iend = num_embeddings
+            count = num_embeddings - batch_size
+        embeddings_batch = embeddings[count:iend]
+        text_batch = normalized_texts[count:iend]
 
-                    samples_batchs = []
-                    hr_samples_batchs = []
-                    # Generate up to 16 images for each sentence with
-                    # randomness from noise z and conditioning augmentation.
-                    for i in range(np.minimum(16, cfg.TEST.NUM_COPY)):
-                        hr_samples, samples =\
-                            sess.run([hr_fake_images_opt, fake_images_opt],
-                                     {embeddings_holder: embeddings_batch})
-                        samples_batchs.append(samples)
-                        hr_samples_batchs.append(hr_samples)
-                        save_super_images(samples_batchs,
-                                          hr_samples_batchs,
-                                          captions_batch,
-                                          batch_size,
-                                          count, save_dir)
-                    count += batch_size
+        # sample images
+        hr_samples_batch, lr_samples_batch = model.generate_n(embeddings_batch)
+        super_images = save_super_images(
+            lr_samples_batch,
+            hr_samples_batch,
+            text_batch,
+            batch_size,
+            startID=count, save_dir=save_dir)
 
-        print('Finish generating samples for %d sentences:' % num_embeddings)
-        print('Example sentences:')
-        for i in xrange(np.minimum(10, num_embeddings)):
-            print('Sentence %d: %s' % (i, captions_list[i]))
+        count += batch_size
+
+    print('Finish generating samples for %d sentences:' % num_embeddings)
+    print('Example sentences:')
+    for i in range(np.minimum(10, num_embeddings)):
+        print('Sentence %d: %s' % (i, normalized_texts[i]))

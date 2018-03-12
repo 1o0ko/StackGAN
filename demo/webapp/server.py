@@ -10,13 +10,14 @@ from flask import send_file
 from misc.config import cfg, cfg_from_file
 from embedding.model import Model
 from embedding.preprocessing import normalize
-from demo.demo_embeddings_tf import parse_args, GenerativeModel
+from demo.demo_embeddings_tf import parse_args, save_super_images, GenerativeModel
 
 app = Flask(__name__)
 
 text_model = None
 img_model = None
 NUM_IMGS = 8
+
 
 def embed_text(text, text_model):
     texts = [normalize(str(text))]
@@ -35,9 +36,11 @@ def my_form():
 @app.route('/', methods=['POST'])
 def my_form_post():
     text = request.form['text'].lower()
-    embeddings, num_embeddings, captions_list = embed_text(text, text_model)
-    imgs = img_model.generate(embeddings, captions_list, n=NUM_IMGS)
-    print('Generated: %d images' % len(imgs))
+    embeddings, num_embeddings, normalized_texts = embed_text(text, text_model)
+    hr_imgs, lr_imgs = img_model.generate_n(embeddings, n=NUM_IMGS)
+    imgs = save_super_images(lr_imgs, hr_imgs, normalized_texts, 1, startID=0)
+
+    print('Generated: %d images' % len(hr_imgs))
     strIO = StringIO.StringIO()
     imsave(strIO, imgs[0], plugin='pil', format_str='png')
     strIO.seek(0)
