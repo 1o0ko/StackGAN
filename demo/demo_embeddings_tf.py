@@ -1,3 +1,6 @@
+'''
+Reads texts from file and for each line generates N imagess conditioned on text
+'''
 from __future__ import division
 from __future__ import print_function
 
@@ -252,7 +255,7 @@ if __name__ == "__main__":
     if num_embeddings <= 0:
         raise ValueError('At least one embedding required')
 
-    # set batchs size 
+    # set batchs size
     batch_size = np.minimum(num_embeddings, cfg.TEST.BATCH_SIZE)
 
     # create model
