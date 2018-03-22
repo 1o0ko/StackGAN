@@ -63,8 +63,6 @@ from docopt import docopt
 
 BLACK_LIST = string.punctuation.replace('%', '').replace('-', '') + '\n'
 
-from preprocessing import normalize
-
 
 def get_categorical_accuracy_keras(y_true, y_pred):
     return K.mean(K.equal(K.argmax(y_true, axis=1), K.argmax(y_pred, axis=1)))
