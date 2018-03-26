@@ -22,7 +22,7 @@ class conv_batch_norm(pt.VarStoreMethod):
                  in_dim=None, phase=Phase.train):
         shape = input_layer.shape
         shp = in_dim or shape[-1]
-        with tf.variable_scope(name) as scope:
+        with tf.variable_scope(name):
             self.mean = self.variable('mean', [shp], init=tf.constant_initializer(0.), train=False)
             self.variance = self.variable('variance', [shp], init=tf.constant_initializer(1.0), train=False)
 

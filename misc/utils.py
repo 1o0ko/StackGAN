@@ -5,10 +5,12 @@ https://github.com/openai/improved-gan/blob/master/imagenet/utils.py
 from __future__ import division
 from __future__ import print_function
 
+import errno
+import os
+import pickle
+
 import numpy as np
 import scipy.misc
-import os
-import errno
 
 
 def load_filenames(data_dir):

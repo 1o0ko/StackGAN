@@ -4,11 +4,12 @@ from __future__ import print_function
 import prettytensor as pt
 import tensorflow as tf
 import misc.custom_ops
+
 from misc.custom_ops import leaky_rectify
 from misc.config import cfg
 
 # TODO:  Does template.constrct() really shared the computation
-# when multipel times of construct are done
+# when multiple times of construct are done
 
 
 class CondGAN(object):

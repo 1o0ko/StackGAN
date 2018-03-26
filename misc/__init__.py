@@ -9,12 +9,14 @@ from glob import glob
 
 PATTERN = 'class (.+?)\(BaseDataset\):'
 
+
 def find_classes(module):
     with open(module, 'rt') as f:
         for line in f.readlines():
             m = re.search(PATTERN, line)
             if m:
-               yield m.group(1)
+                yield m.group(1)
+
 
 # import all classes that subclass from PATTERN
 for module in glob(join(dirname(__file__), '*.py')):
