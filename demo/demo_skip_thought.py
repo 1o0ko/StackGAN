@@ -142,7 +142,7 @@ def save_super_images(sample_batchs, hr_sample_batchs,
             super_row=np.concatenate([row1, row2], axis = 0)
             superimage2=np.zeros_like(superimage)
             superimage2[:super_row.shape[0],
-                        : super_row.shape[1],
+                        :super_row.shape[1],
                         : super_row.shape[2]]= super_row
             mid_padding = np.zeros((64, superimage.shape[1], 3))
             superimage=
