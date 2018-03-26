@@ -14,7 +14,6 @@ import re
 from misc.config import cfg, cfg_from_file
 from misc.utils import mkdir_p
 from stageII.model import CondGAN
-from embedding.model import Model
 
 
 def parse_args():
@@ -220,5 +219,5 @@ if __name__ == "__main__":
 
         print('Finish generating samples for %d sentences:' % num_embeddings)
         print('Example sentences:')
-        for i in xrange(np.minimum(10, num_embeddings)):
+        for i in range(np.minimum(10, num_embeddings)):
             print('Sentence %d: %s' % (i, captions_list[i]))

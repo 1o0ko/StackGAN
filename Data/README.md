@@ -10,3 +10,9 @@
 
 **Skip-thought Vocabulary**
 - [Download](https://github.com/ryankiros/skip-thoughts) vocabulary for skip-thought vectors to `Data/`.
+
+**Fashion**
+1. Download the dataset 
+2. Train the embedding model on text
+  - For word-level cnn: 
+  - For self-attention: 
