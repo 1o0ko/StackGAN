@@ -181,22 +181,17 @@ def save_super_images(lr_sample_batchs, hr_sample_batchs,
     return super_images
 
 
-def embed_text(texts_path, model_path):
-    print('Loading texts')
+def load_texts(texts_path):
     with open(texts_path, 'rt') as f:
         texts = f.readlines()
+    return texts
 
-    print('Loading embedding model')
-    model = Model(
-        os.path.join(model_path, 'frozen_model.pb'),
-        os.path.join(model_path, 'tokenizer.pickle')
-    )
 
+def embed_text(texts, model):
     normalized_texts = [normalize(text) for text in texts]
     embeddings = model.embed(normalized_texts)
-
     num_embeddings = len(normalized_texts)
-    print('Successfully load sentences from: ', texts_path)
+
     print('Total number of sentences:', num_embeddings)
     print('num_embeddings:', num_embeddings, embeddings.shape)
 
@@ -247,10 +242,16 @@ if __name__ == "__main__":
     if args.caption_path is not None:
         cfg.TEST.CAPTION_PATH = args.caption_path
 
-    # generate embeddings
-    embeddings, num_embeddings, normalized_texts = embed_text(
-        args.caption_path,
-        args.caption_model)
+    print('Loading texts')
+    texts = load_texts(args.caption_path)
+
+    print('Loading embedding model')
+    model = Model(
+        os.path.join(args.caption_model, 'frozen_model.pb'),
+        os.path.join(args.caption_model, 'tokenizer.pickle')
+    )
+
+    embeddings, num_embeddings, normalized_texts = embed_text(texts, model)
 
     if num_embeddings <= 0:
         raise ValueError('At least one embedding required')
@@ -260,11 +261,10 @@ if __name__ == "__main__":
 
     # create model
     model = GenerativeModel(cfg, batch_size, embeddings.shape[-1])
+
     # path to save generated samples
     save_dir = args.save_dir if args.save_dir else os.path.dirname(
         args.caption_path)
-
-    # Build StackGAN and load the model
 
     count = 0
     while count < num_embeddings:
