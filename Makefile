@@ -351,7 +351,7 @@ nb: notebook
 
 # Phony target to run a Tensorboard using the `attach` target as a dependency
 .PHONY: tensorboard
-tensorboard: print_makefile_version $(TARGET_DONE_FILE_BUILD) $(TENSORBOARD_DIR)
+tensorboard: print_makefile_version $(TARGET_DONE_FILE_BUILD) 
 	$(MAKE) attach CMD="$(TENSORBOARD_COMMAND)"
 
 
