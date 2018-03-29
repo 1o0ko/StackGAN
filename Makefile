@@ -54,20 +54,21 @@ endef
 PWD = $(call escape_spaces,$(CURDIR))
 
 
+
+DOCKER_ROOT := /eai
+DOCKER_HOME := $(DOCKER_ROOT)/project
+DOCKER_DATASET := $(DOCKER_ROOT)/datasets
+
 # Default values
-DEFAULT_DOCKER := docker
+DEFAULT_DOCKER := nvidia-docker
 DEFAULT_DOCKER_IMAGE_VERSION := latest
 DEFAULT_PORTS_TO_PUBLISH :=
 DEFAULT_VOLUMES_TO_MOUNT :=
 DEFAULT_ENV_VAR_TO_EXPORT :=
 DEFAULT_IMAGE_FILES_DEPENDENCIES := Dockerfile
-DEFAULT_TENSORBOARD_DIR := tensorboard_logs
+DEFAULT_TENSORBOARD_DIR := $(DOCKER_ROOT)/project/ckt_logs 
 DEFAULT_DOCKER_BUILD_EXTRA :=
 DEFAULT_DOCKER_RUN_EXTRA :=
-
-DOCKER_ROOT := /eai
-DOCKER_HOME := $(DOCKER_ROOT)/project
-DOCKER_DATASET := $(DOCKER_ROOT)/datasets
 
 # Environment variables always exported to a running container
 ALWAYS_DOCKER_ENV_VAR = HOST_HOSTNAME=$(HOSTNAME) HOST_USERNAME=$(USERNAME)
@@ -200,7 +201,7 @@ JUPYTER_COMMAND = jupyter notebook \
 #
 # Command to execute to launch tensorboard
 TENSORBOARD_COMMAND = tensorboard \
-    --logdir=/eai/$(TENSORBOARD_DIR) \
+    --logdir=$(TENSORBOARD_DIR) \
     --host 0.0.0.0 \
     --port $(TENSORBOARD_PORT)
 
@@ -346,11 +347,6 @@ notebook: print_makefile_version $(TARGET_DONE_FILE_BUILD)
 # Shorthand phony target
 .PHONY: nb
 nb: notebook
-
-
-# Create the directory where Tensorboard should be reading its logs
-$(TENSORBOARD_DIR):
-	mkdir -p $(TENSORBOARD_DIR)
 
 
 # Phony target to run a Tensorboard using the `attach` target as a dependency
