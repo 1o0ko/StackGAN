@@ -193,7 +193,6 @@ class Dataset(object):
                         self._embeddings[current_ids],
                         filenames, class_id, window)
             except Exception:
-                import ipdb; ipdb.set_trace()
                 raise Exception
 
             ret_list.append(sampled_embeddings)

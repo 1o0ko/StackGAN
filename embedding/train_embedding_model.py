@@ -1,8 +1,9 @@
 """
-Usage: example.py DATA_PATH GLOVE OUTPUT_PATH [options]
+Usage: example.py TRAIN_DATA_PATH TEST_DATA_PATH GLOVE OUTPUT_PATH [options]
 
 Arguments:
-    DATA_PATH      path with data
+    TRAIN_DATA_PATH      path with train data
+    TEST_DATA_PATH       path with test data
     OUTPUT_PATH    path to save the model file
     GLOVE          file where glove vectors are saved
 
@@ -12,11 +13,6 @@ Options:
     -s, --sent-length=<int>      Maximum number of words in the sentence
                                  [default: 70]
 
-    -t, --test-size=<float>      Percentage size of the test data
-                                 [default: 0.1]
-
-    -m, --min-count=<int>        Minimum class count
-                                 [default: 2]
     -d, --dropout=<float>        Dropout rate
                                  [default: 0.2]
 
@@ -57,8 +53,6 @@ from keras.preprocessing.text import Tokenizer
 from keras.regularizers import l2
 from keras.utils.np_utils import to_categorical
 
-from sklearn.model_selection import StratifiedShuffleSplit
-
 from docopt import docopt
 
 BLACK_LIST = string.punctuation.replace('%', '').replace('-', '') + '\n'
@@ -89,18 +83,16 @@ def load_data(data_path, verbose=False):
     return texts, labels
 
 
-def process_data(texts, num_words, maxlen):
+def process_data(texts, num_words, maxlen, tokenizer=None):
     logger = logging.getLogger(__name__)
 
     # Setting up keras tokenzer
-    tokenizer = Tokenizer(num_words=num_words)
-    tokenizer.fit_on_texts(texts)
+    if tokenizer is None:
+        tokenizer = Tokenizer(num_words=num_words)
+        tokenizer.fit_on_texts(texts)
+        logger.debug('Found %s unique tokens', len(tokenizer.word_index))
+
     sequences = tokenizer.texts_to_sequences(texts)
-
-    word_index = tokenizer.word_index
-    logger.debug('Found %s unique tokens', len(word_index))
-
-    # Padding data
     data = pad_sequences(
         sequences,
         maxlen=maxlen,
@@ -149,40 +141,6 @@ def load_glove_embeddings(embedding_path, word_index,
     return embedding_layer
 
 
-def get_split(data, labels, test_size, min_count=2, seed=0):
-    # we want to filter classes less frequent than 2
-    class_info = np.argmax(labels, axis=1)
-    class_counts = Counter(class_info)
-    labels_, data_ = zip(*[
-        (cls, txt) for cls, txt in zip(labels, data) if class_counts[np.argmax(cls)] >= min_count]
-    )
-
-    # due to high class impalance whe need to stratify the split
-    labels_ = np.array(labels_)
-    data_ = np.array(data_)
-    class_info = np.argmax(labels_, axis=1)
-    sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=seed)
-    train_idx, test_idx = list(sss.split(class_info, class_info))[0]
-
-    return train_idx, test_idx, labels_, data_
-
-
-def train_val_split(data, labels, test_size, min_count=2, seed=0):
-    '''
-    Splits data and lables into training and validation set
-    '''
-    train_idx, test_idx, labels_, data_ = get_split(
-        data, labels, test_size, min_count, seed)
-
-    x_train = data_[train_idx]
-    y_train = labels_[train_idx]
-
-    x_val = data_[test_idx]
-    y_val = labels_[test_idx]
-
-    return x_train, y_train, x_val, y_val
-
-
 def build_model(word_index, glove_path, max_sent, dropout_rate, nb_classes):
     logger = logging.getLogger(__name__)
 
@@ -226,28 +184,32 @@ def build_model(word_index, glove_path, max_sent, dropout_rate, nb_classes):
 
 def main(args):
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
 
     # load data
-    texts, labels = load_data(
-        args['DATA_PATH'], bool(args['--verbose']))
+    train_texts, y_train = load_data(
+        args['TRAIN_DATA_PATH'], bool(args['--verbose']))
+
+    test_texts, y_test = load_data(
+        args['TEST_DATA_PATH'], bool(args['--verbose']))
 
     # process data
-    data, tokenizer = process_data(
-        texts,
-        int(args['--words']), int(args['--sent-length']))
+    x_train, tokenizer = process_data(
+        train_texts,
+        int(args['--words']), int(args['--sent-length']),
+    )
 
-    logger.debug('Shape of data tensor: %s', data.shape)
-    logger.debug('Shape of label tensor: %s', labels.shape)
+    logger.debug('Shape of train data tensor: %s', x_train.shape)
+    logger.debug('Shape of train label tensor: %s', y_train.shape)
 
-    nb_classes = labels.shape[1]
+    x_test, _ = process_data(
+        test_texts,
+        int(args['--words']), int(args['--sent-length']),
+        tokenizer=tokenizer)
 
-    # make split
-    x_train, y_train, x_val, y_val = train_val_split(
-        data,
-        labels,
-        float(args['--test-size']),
-        int(args['--min-count']))
+    logger.debug('Shape of test data tensor: %s', x_test.shape)
+    logger.debug('Shape of test label tensor: %s', y_test.shape)
+
+    nb_classes = y_train.shape[1]
 
     # build and train a model
     logger.info('Building model')
@@ -268,7 +230,7 @@ def main(args):
     logger.info('Fit that thing!')
     model.fit(
         x_train, y_train,
-        validation_data=(x_val, y_val),
+        validation_data=(x_test, y_test),
         callbacks=callbacks,
         epochs=int(args['--epochs']),
         batch_size=int(args['--batch-size']),
@@ -280,7 +242,7 @@ def main(args):
 
     # evalute model on validation data
     logger.info("Validation data")
-    logger.info(model.evaluate(x_val, y_val, batch_size=128))
+    logger.info(model.evaluate(x_test, y_test, batch_size=128))
 
     # all new operations will be in test mode from now on (dropout, etc.)
     K.set_learning_phase(0)

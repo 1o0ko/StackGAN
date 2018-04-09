@@ -11,9 +11,8 @@ import numpy as np
 from fuel.datasets.hdf5 import H5PYDataset
 from scipy.misc import imresize
 
-from model import Model
-from train_embedding_model import get_split
-from preprocessing import normalize
+from embedding.model import Model
+from embedding.preprocessing import normalize
 
 # Pipeline properties
 BATH_SIZE = 100
