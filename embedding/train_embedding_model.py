@@ -11,7 +11,7 @@ Options:
     -w, --words=<int>            Maximum number of words in dictionary
                                  [default: 10000]
     -s, --sent-length=<int>      Maximum number of words in the sentence
-                                 [default: 70]
+                                 [default: 30]
 
     -d, --dropout=<float>        Dropout rate
                                  [default: 0.2]
@@ -25,10 +25,12 @@ Options:
 
     --early-stopping-patience=<int> Wait 'n' epochs before stopping
                                     [default: 4]
+    -w, --class-weight           Whether to use class weighting or not
 """
-
-import os
+import json
 import logging
+import math
+import os
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',)
@@ -58,29 +60,46 @@ from docopt import docopt
 BLACK_LIST = string.punctuation.replace('%', '').replace('-', '') + '\n'
 
 
+def get_class_weights(y):
+    ''' Returns class weights for unbalanced classes '''
+    counter = Counter(np.argmax(y, axis=1))
+    majority = float(max(counter.values()))
+    return {cls: float(math.ceil(majority / count)) for cls, count in counter.items()}
+
+
 def get_categorical_accuracy_keras(y_true, y_pred):
     return K.mean(K.equal(K.argmax(y_true, axis=1), K.argmax(y_pred, axis=1)))
 
 
-def load_data(data_path, verbose=False):
+def load_data(data_path, verbose=False, class_to_id=None):
     logger = logging.getLogger(__name__)
     with open(data_path, 'rt') as f:
         classes, texts = zip(*[line.split(" ", 1) for line in f.readlines()])
 
-        # class preprocessing
-        classes_stats = Counter(classes).most_common()
-        class_to_id = {
-            key: index for (index, (key, value)) in enumerate(classes_stats)
-        }
-        labels = to_categorical([class_to_id[cls] for cls in classes])
+        # filter classes that are not in the dict
+        if class_to_id is not None:
+            classes, texts = zip(*[
+                (cls, text) for cls, text in zip(classes, texts)
+                if cls in class_to_id
+            ])
+        else:
+            logger.info("Filtering classes")
+            classes_stats = Counter(classes).most_common()
+            class_to_id = {
+                key: index for (index, (key, value)) in enumerate(classes_stats)
+            }
+
+        labels = to_categorical(
+            y=[class_to_id[cls] for cls in classes],
+            num_classes=len(class_to_id)
+        )
 
         if verbose:
             logger.info("Class statistics")
-            logger.info("Found %i classes" % len(classes_stats))
-            for key, value in classes_stats:
-                logger.info("\t %s: %i" % (key, value))
+            logger.info("Found %i classes" % len(class_to_id))
+            logger.info("Labels shape: (%s, %s)" % labels.shape)
 
-    return texts, labels
+    return texts, labels, class_to_id
 
 
 def process_data(texts, num_words, maxlen, tokenizer=None):
@@ -186,11 +205,13 @@ def main(args):
     logger = logging.getLogger(__name__)
 
     # load data
-    train_texts, y_train = load_data(
+    train_texts, y_train, class_to_id = load_data(
         args['TRAIN_DATA_PATH'], bool(args['--verbose']))
 
-    test_texts, y_test = load_data(
-        args['TEST_DATA_PATH'], bool(args['--verbose']))
+    test_texts, y_test, _ = load_data(
+        args['TEST_DATA_PATH'], bool(args['--verbose']),
+        class_to_id=class_to_id
+    )
 
     # process data
     x_train, tokenizer = process_data(
@@ -198,16 +219,16 @@ def main(args):
         int(args['--words']), int(args['--sent-length']),
     )
 
-    logger.debug('Shape of train data tensor: %s', x_train.shape)
-    logger.debug('Shape of train label tensor: %s', y_train.shape)
+    logger.info('Shape of train data tensor: %s', x_train.shape)
+    logger.info('Shape of train label tensor: %s', y_train.shape)
 
     x_test, _ = process_data(
         test_texts,
         int(args['--words']), int(args['--sent-length']),
         tokenizer=tokenizer)
 
-    logger.debug('Shape of test data tensor: %s', x_test.shape)
-    logger.debug('Shape of test label tensor: %s', y_test.shape)
+    logger.info('Shape of test data tensor: %s', x_test.shape)
+    logger.info('Shape of test label tensor: %s', y_test.shape)
 
     nb_classes = y_train.shape[1]
 
@@ -228,13 +249,21 @@ def main(args):
         patience=int(args['--early-stopping-patience'])))
 
     logger.info('Fit that thing!')
+    if args['--class-weight']:
+        class_weight = get_class_weights(y_train)
+        logger.info(json.dumps(class_weight, sort_keys=True, indent=4))
+    else:
+        class_weight = None
+
     model.fit(
         x_train, y_train,
         validation_data=(x_test, y_test),
         callbacks=callbacks,
         epochs=int(args['--epochs']),
         batch_size=int(args['--batch-size']),
-        verbose=int(args['--verbose']))
+        verbose=int(args['--verbose']),
+        class_weight=class_weight
+    )
 
     # evalute model on train data to see how well we're fitting the data
     logger.info("Train data")

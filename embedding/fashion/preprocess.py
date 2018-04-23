@@ -52,7 +52,7 @@ def save_classes_and_texts(data_set, output_dir, batch_size,
     seen = set()
     with open(output_file, 'wt') as f:
         processed = 0
-        for i in tqdm(itertools.islice(xrange(num_batch), limit)):
+        for i in tqdm(list(itertools.islice(xrange(num_batch), limit))):
             # fetch batch of data
             low, high = i * batch_size, min((i + 1) * batch_size, data_set.num_examples)
             rows = data_set.get_data(handle, slice(low, high))
