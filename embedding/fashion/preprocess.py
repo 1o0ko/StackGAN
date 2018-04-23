@@ -9,6 +9,8 @@ Options:
     -l, --limit=<int>       limit on the number of batches processed
     -b, --batch-size=<int>  Size of the batch used for processing
                             [default: 256]
+    -s, --sentences=<int>   Take first n-sentences from description
+                            [default: 2]
 """
 import os
 import logging
@@ -31,7 +33,7 @@ from embedding.preprocessing import normalize, normalize_class
 
 
 def save_classes_and_texts(data_set, output_dir, batch_size,
-                           limit=None, vocab=None):
+                           limit=None, vocab=None, head=None):
     '''
     Dumps the hdf5 dataset to flat textfile, saves categories and
     '''
@@ -56,8 +58,8 @@ def save_classes_and_texts(data_set, output_dir, batch_size,
             rows = data_set.get_data(handle, slice(low, high))
 
             # process batch
-            classes = [normalize_class(row[0]) for row in rows[1]]
-            texts = [normalize(text[0], vocab=vocab) for text in rows[4]]
+            classes = [normalize_class(row[0]) for row in rows[0]]
+            texts = [normalize(text[0], vocab=vocab, head=head) for text in rows[1]]
             lines = ["%s %s\n" % (c, t) for c, t in zip(classes, texts)]
 
             # dumplines (there is a lot of duplication)
@@ -99,12 +101,12 @@ def main(args):
     # parse arguments
     batch_size = int(args['--batch-size'])
     limit = int(args['--limit']) if args['--limit'] else None
-
+    sentences = int(args['--sentences']) if args['--sentences'] else None
     for data_path in glob.glob(args['SOURCE_TEMPLATE']):
         data_set = H5PYDataset(data_path, which_sets=('all',))
         data_name = os.path.splitext(os.path.basename(data_path))[0]
         out_dir = os.path.join(args['OUTPUT_PATH'], data_name)
-        save_classes_and_texts(data_set, out_dir, batch_size, limit)
+        save_classes_and_texts(data_set, out_dir, batch_size, limit, head=sentences)
 
 
 if __name__ == '__main__':

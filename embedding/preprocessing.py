@@ -16,7 +16,9 @@ def normalize_class(class_name):
 
 def normalize(text,
               black_list=BLACK_LIST,
-              vocab=None, lowercase=True, tokenize=False):
+              vocab=None, lowercase=True, tokenize=False, head=None):
+    if head:
+        text = ' '.join(text.split(".")[:head])
     if black_list:
         text = text.translate(string.maketrans(BLACK_LIST, ' ' * len(BLACK_LIST)))
     if lowercase:
@@ -30,7 +32,7 @@ def normalize(text,
 
 
 def save_classes_and_texts(data_set, output_dir,
-                           batch_size=BATCH_SIZE, limit=None, vocab=None):
+                           batch_size=BATCH_SIZE, limit=None, vocab=None, head=None):
     '''
     Dumps the hdf5 dataset to flat textfile, saves categories and
     '''
@@ -54,7 +56,7 @@ def save_classes_and_texts(data_set, output_dir,
 
             # process batch
             classes = [normalize_class(row[0]) for row in rows[1]]
-            texts = [normalize(text[0], vocab=vocab) for text in rows[4]]
+            texts = [normalize(text[0], vocab=vocab, head=head) for text in rows[4]]
             lines = ["%s %s\n" % (c, t) for c, t in zip(classes, texts)]
 
             # dumplines
